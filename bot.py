@@ -17,12 +17,34 @@ class irc:
     def __init__(self, info):
         
         self.HOST = info["HOST"]
-        self.PORT = info["PORT"]
+        self.PORT = int(info["PORT"])
         self.CHANNELS = info["CHANNELS"]
         self.NICK = info["NICK"]
         self.IDENT = info["IDENT"]
         self.REALNAME = info["REALNAME"]
         self.EXTRA = info["EXTRA"]
+
+    def connect(self, info):
+        
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s.connect((self.HOST, self.PORT))
+        self.s.send("NICK {}\r\n".format(self.NICK).encode("utf-8"))
+        self.s.send("USER {} 0 * :{}\r\n"
+                    .format(self.IDENT, self.REALNAME).encode("utf-8"))
+
+    # Send a command to IRC
+    def sendcmd(self, cmd, msg):
+        self.s.send("{} :{}\r\n"
+                    .format(cmd, msg).encode("utf-8", errors="ignore"))
+
+    # Send a message to IRC
+    def sendmsg(self, channel, msg):
+        self.s.send("PRIVMSG {} :{}\r\n"
+                    .format(channel, msg).encode("utf-8"))
+
+    def run(self):
+        print(self.s.recv(512).decode("utf-8"))
+                    
 
 ## MAIN PROGRAM ##
 ##################
@@ -46,3 +68,8 @@ try:
 except KeyError:
     print("Error in info file")
     sys.exit(1)
+
+s.connect(info)
+s.sendcmd("JOIN", "#Patchouli")
+while 1:
+    s.run()
