@@ -3,8 +3,7 @@ import sys
 import re
 import socket
 import http.client
-import urllib.parse
-import math
+import importlib
 import traceback
 
 from time import sleep
@@ -69,7 +68,8 @@ except KeyError:
     print("Error in info file")
     sys.exit(1)
 
-s.connect(info)
-s.sendcmd("JOIN", "#Patchouli")
-while 1:
-    s.run()
+m = importlib.import_module("test_module")
+m.main()
+
+# s.connect(info)
+# s.sendcmd("JOIN", "#Patchouli")
