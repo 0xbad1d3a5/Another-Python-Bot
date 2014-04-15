@@ -1,10 +1,12 @@
 #!/usr/bin/python3
 import sys
+import os
 import re
 import socket
 import http.client
 import importlib
 import traceback
+import modules
 
 from time import sleep
 
@@ -48,6 +50,16 @@ class irc:
 ## MAIN PROGRAM ##
 ##################
 
+# Open modules directory and create a list of module names
+moduleNames = ["." + x[:-3] for x in os.listdir("./modules") if x[-3:] == ".py"]
+modules = [importlib.import_module(moduleName, package="modules").main() for moduleName in moduleNames]
+
+for m in modules:
+    m.hi();
+
+#m = importlib.import_module("test_module.py", package="modules").main()
+#m.hi();
+
 # First thing we need to do is check for the info file
 try:
     f = open("info", "r")
@@ -67,10 +79,6 @@ try:
 except KeyError:
     print("Error in info file")
     sys.exit(1)
-
-m = importlib.import_module("test_module").main()
-m.hi();
-#m.main()
 
 # s.connect(info)
 # s.sendcmd("JOIN", "#Patchouli")
