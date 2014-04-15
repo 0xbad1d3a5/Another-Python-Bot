@@ -68,8 +68,9 @@ except KeyError:
     print("Error in info file")
     sys.exit(1)
 
-m = importlib.import_module("test_module")
-m.main()
+m = importlib.import_module("test_module").main()
+m.hi();
+#m.main()
 
 # s.connect(info)
 # s.sendcmd("JOIN", "#Patchouli")
