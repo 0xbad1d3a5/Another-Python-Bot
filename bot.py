@@ -52,7 +52,7 @@ class irc:
 
 # Open modules directory and create a list of module names
 moduleNames = ["." + x[:-3] for x in os.listdir("./modules") if x[-3:] == ".py"]
-modules = [importlib.import_module(moduleName, package="modules").main() for moduleName in moduleNames]
+modules = [importlib.import_module(x, package="modules").main() for x in moduleNames]
 
 for m in modules:
     m.hi();
