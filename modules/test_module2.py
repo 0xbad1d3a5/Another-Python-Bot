@@ -11,4 +11,3 @@ class module(threading.Thread):
 
     def run(self):
         self.q.put(self.m)
-        return

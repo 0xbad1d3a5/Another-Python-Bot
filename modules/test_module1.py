@@ -8,7 +8,7 @@ class module(threading.Thread):
         super(module, self).__init__()
         self.m = m
         self.q = q
+        print("Thread .hello created!")
 
     def run(self):
         self.q.put(self.m)
-        return

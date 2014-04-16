@@ -6,6 +6,7 @@ import socket
 import http.client
 import importlib
 import queue
+import threading
 import traceback
 
 import modules
@@ -74,7 +75,7 @@ class irc:
     # Send a command to IRC
     def sendcmd(self, cmd, params, msg):
         if params:
-            params = "".join(params)
+            params = " ".join(params)
             self.s.send("{} {} :{}\r\n".format(cmd, params, msg)
                         .encode("utf-8", errors="ignore"))
         else:
@@ -149,14 +150,24 @@ while 1:
     
     marray = IRC.run()
 
+    """
     for m in marray:
         for mod in modules:
             mclass = getattr(mod, "module")
             if mclass.cmd == m[3][:len(mclass.cmd)]:
+                print(mclass.cmd)
+                thread = mclass(m, q)
+                thread.start()
+                """
+
+    for mod in modules:
+        mclass = getattr(mod, "module")
+        for m in marray:
+            if mclass.cmd == m[3][:len(mclass.cmd)]:
+                print(mclass.cmd)
                 thread = mclass(m, q)
                 thread.start()
 
     while not q.empty():
         m = q.get()
-        print(m)
         IRC.sendcmd(m[1], m[2], m[3])
