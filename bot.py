@@ -5,10 +5,10 @@ import re
 import socket
 import http.client
 import importlib
+import queue
 import traceback
-import modules
 
-from time import sleep
+import modules
 
 ## This is the class that will communicate with the IRC server ##
 #################################################################
@@ -45,33 +45,34 @@ class irc:
 
     def run(self):
         print(self.s.recv(512).decode("utf-8"))
-                    
 
 ## MAIN PROGRAM ##
 ##################
 
-# Open modules directory and create a list of module names
-moduleNames = ["." + x[:-3] for x in os.listdir("./modules") if x[-3:] == ".py"]
-modules = [importlib.import_module(x, package="modules").main() for x in moduleNames]
+# Import the modules from the modules directory
+modules = [importlib.import_module("." + x, package="modules")
+           for x in modules.__all__]
+
+q = queue.Queue()
 
 for m in modules:
-    m.hi();
+    mclass = getattr(m, "module")
+    thread = mclass("Hello World!", q)
+    thread.start()
 
-#m = importlib.import_module("test_module.py", package="modules").main()
-#m.hi();
+while not q.empty():
+    print(q.get())
 
-# First thing we need to do is check for the info file
+# Get settings from info file
 try:
+    info = {}
     f = open("info", "r")
+    for l in f:
+        (key, val) = l.strip("\n").split("=")
+        info[key.upper()] = val
 except IOError:
     print("File Not Found: \"info\"")
     sys.exit(1)
-
-# Get settings from file
-info = {}
-for l in f:
-    (key, val) = l.strip("\n").split("=")
-    info[key.upper()] = val
 
 # Create a new irc object
 try:
