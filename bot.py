@@ -99,8 +99,8 @@ class irc:
             if m[1] == "PING":
                 self.sendcmd("PONG", None, m[3])
 
-            # RPL_LUSERME - Use this message to JOIN channels at start
-            elif m[1] == "255":
+            # RPL_ENDOFMOTD - Use this message to JOIN channels at start
+            elif m[1] == "376":
                 channels = self.CHANNELS.split(",")
                 for c in channels:
                     self.sendcmd("JOIN", None, c)
@@ -111,11 +111,17 @@ class irc:
 
             # PRIVMSG - any sort of message
             elif m[1] == "PRIVMSG":
+                # If it's a PM, then replace <params> with sender
+                # This is so we don't try to send messages to ourself
+                if m[2][0][:1] not in ['#', '$']:
+                    m[2][0] = m[0][1:m[0].find("!")]                
                 marray.append(m)
                 
             # UNIMPLEMENTED - do nothing for the rest of the commands
             else:
                 print("COMMAND {} - NEEDS HANDLING".format(m[1]))
+                print("prefix: {}\nparams: {}\ntrailing: {}"
+                      .format(m[0], m[2], m[3]))
                 
         return marray
 
@@ -150,21 +156,10 @@ while 1:
     
     marray = IRC.run()
 
-    """
-    for m in marray:
-        for mod in modules:
-            mclass = getattr(mod, "module")
-            if mclass.cmd == m[3][:len(mclass.cmd)]:
-                print(mclass.cmd)
-                thread = mclass(m, q)
-                thread.start()
-                """
-
     for mod in modules:
         mclass = getattr(mod, "module")
         for m in marray:
             if mclass.cmd == m[3][:len(mclass.cmd)]:
-                print(mclass.cmd)
                 thread = mclass(m, q)
                 thread.start()
 
