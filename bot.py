@@ -37,42 +37,6 @@ class IRC:
         # Buffer for buffering messages from socket
         self.buffer = ""
 
-    # Parses a IRC message into its components
-    # IRC MESSAGE FORMAT = ":<prefix> <command> <params> :<trailing>"
-    # Returns a server_msg dict - FORMAT:
-    # ['PRE':<prefix>, 'CMD':<cmd>, 'PARAMS':[<p1>, ...], 'MSG':<trailing>]
-    def parse(self, line):
-        
-        # Helper function that finds the nth position of a substring
-        def findn(string, sub, n):
-            start = string.find(sub)
-            while start >= 0 and n > 1:
-                start = string.find(sub, start+len(sub))
-                n -= 1
-            if start < 0:
-                raise Exception("IRC.parse: parse error")
-            return start
-
-        prefix = ""
-        cmdparam = []
-        trailing = ""
-        prefixEnd = 0
-        trailingStart = len(line)
-
-        # Message has a prefix
-        if line[:1] == ":":
-            prefixEnd = findn(line, " ", 1)
-            prefix = line[ : prefixEnd]
-
-        # Message has trailing arguments
-        if " :" in line:
-            trailingStart = findn(line, " :", 1)
-            trailing = line[trailingStart + 2 : ].strip()
-
-        cmdparam = line[prefixEnd : trailingStart].strip().split(" ")       
-        return {"PRE":prefix, "CMD":cmdparam[0],
-                "PARAMS":cmdparam[1:], "MSG":trailing}
-
     def readSocket(self):
         (read, write, excep) = select.select([self.s], [], [], 0)
         if read:
@@ -112,6 +76,42 @@ class IRC:
         if msg["TO"][:1] not in ['#', '$']:
             msg["TO"] = msg["FROM"][1:msg["FROM"].find("!")]
         self.sendcmd("PRIVMSG", [msg["TO"]], string)
+
+    # Parses a IRC message into its components
+    # IRC MESSAGE FORMAT = ":<prefix> <command> <params> :<trailing>\r\n"
+    # Returns a server_msg dict - FORMAT:
+    # ['PRE':<prefix>, 'CMD':<cmd>, 'PARAMS':[<p1>, ...], 'MSG':<trailing>]
+    def parse(self, line):
+        
+        # Helper function that finds the nth position of a substring
+        def findn(string, sub, n):
+            start = string.find(sub)
+            while start >= 0 and n > 1:
+                start = string.find(sub, start+len(sub))
+                n -= 1
+            if start < 0:
+                raise Exception("IRC.parse: parse error")
+            return start
+
+        prefix = ""
+        cmdparam = []
+        trailing = ""
+        prefixEnd = 0
+        trailingStart = len(line)
+
+        # Message has a prefix
+        if line[:1] == ":":
+            prefixEnd = findn(line, " ", 1)
+            prefix = line[ : prefixEnd]
+
+        # Message has trailing arguments
+        if " :" in line:
+            trailingStart = findn(line, " :", 1)
+            trailing = line[trailingStart + 2 : ].strip()
+
+        cmdparam = line[prefixEnd : trailingStart].strip().split(" ")       
+        return {"PRE":prefix, "CMD":cmdparam[0],
+                "PARAMS":cmdparam[1:], "MSG":trailing}
 
     # Processes IRC messages
     # Returns a msg dict on PRIVMSG - FORMAT:
