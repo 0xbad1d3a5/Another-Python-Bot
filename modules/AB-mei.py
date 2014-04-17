@@ -3,12 +3,12 @@ import http
 import json
 import re
 
-class module(threading.Thread):
+class Module(threading.Thread):
 
     cmd = ".mei"
 
     def __init__(self, msg, queue):
-        super(module, self).__init__()
+        super(Module, self).__init__()
         self.msg = msg
         self.queue = queue
         self.data = json.load(open("modules/data/AB-mei", "r"))

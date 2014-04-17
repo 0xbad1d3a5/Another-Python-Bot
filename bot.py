@@ -191,7 +191,7 @@ while True:
             irc.sendmsg(msg, "Reloaded Modules")
             
         for mod in moduleList:
-            moduleClass = getattr(mod, "module")
+            moduleClass = getattr(mod, "Module")
             if moduleClass.cmd == msg["MSG"][:len(moduleClass.cmd)]:
                 try:
                     msg["MSG"] = msg["MSG"][len(moduleClass.cmd):].strip()

@@ -1,12 +1,12 @@
 import threading
 
-class module(threading.Thread):
+class Module(threading.Thread):
 
     # Defines the command that triggers the module
     cmd = ".example_command"
 
     def __init__(self, msg, queue):
-        super(module, self).__init__()
+        super(Module, self).__init__()
         self.msg = msg
         self.queue = queue
 
