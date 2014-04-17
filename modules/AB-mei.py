@@ -14,8 +14,7 @@ class module(threading.Thread):
     def run(self):
         imgurl = self.msg["MSG"]
         self.msg["MSG"] = self.imgupload(imgurl)
-        if self.msg["MSG"]:
-            self.queue.put(self.msg)
+        self.queue.put(self.msg)
         return
 
     def reqpage(self, conn, method, url, body, header):
@@ -25,8 +24,6 @@ class module(threading.Thread):
             conn.close()
             return resp
         except:
-            self.msg["MSG"] = "ImageUpload Error"
-            self.queue.put(self.msg)
             return None
 
     def imgupload(self, imgurl):
@@ -56,3 +53,6 @@ class module(threading.Thread):
             url = meiurl + url
             if url != meiurl:
                 return url
+            return "ImageUpload Error"
+        else:
+            return "ImageUpload Error"

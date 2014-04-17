@@ -1,16 +1,22 @@
 #!/usr/bin/python3
 import os
 import re
-import sys
 import imp
+import sys
+import json
 import queue
 import socket
 import select
 import importlib
-import traceback
 import http.client
 
 import modules
+
+# Import the modules from the modules directory
+moduleList = [importlib.import_module("." + mod, package="modules")
+           for mod in modules.__all__]
+# Queue that modules write to to communicate in IRC
+queue = queue.Queue()
 
 ## This is the class that will communicate with the IRC server ##
 #################################################################
@@ -154,11 +160,8 @@ class IRC:
 
 # Get settings from info file
 try:
-    info = {}
     file_info = open("info", "r")
-    for line in file_info:
-        (key, val) = line.strip("\n").split("=")
-        info[key.upper()] = val
+    info = json.load(file_info)
 except IOError:
     print("File Not Found: \"info\"")
     sys.exit(1)
@@ -170,11 +173,6 @@ try:
 except KeyError:
     print("Error in info file")
     sys.exit(1)
-
-# Import the modules from the modules directory
-moduleList = [importlib.import_module("." + mod, package="modules")
-           for mod in modules.__all__]
-queue = queue.Queue()
 
 while True:
 
