@@ -6,12 +6,11 @@ class module(threading.Thread):
 
     cmd = ".world"
 
-    def __init__(self, m, q):
+    def __init__(self, msg, queue):
         super(module, self).__init__()
-        self.m = m
-        self.q = q
-        print("Thread .hello created on {}\n".format(datetime.now()))
+        self.msg = msg
+        self.queue = queue
 
     def run(self):
-        self.q.put(self.m)
+        self.queue.put(self.msg)
         return
