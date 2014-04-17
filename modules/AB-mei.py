@@ -1,5 +1,6 @@
 import threading
 import http
+import json
 import re
 
 class module(threading.Thread):
@@ -10,6 +11,7 @@ class module(threading.Thread):
         super(module, self).__init__()
         self.msg = msg
         self.queue = queue
+        self.data = json.load(open("modules/data/AB-mei", "r"))
 
     def run(self):
         imgurl = self.msg["MSG"]
@@ -28,14 +30,9 @@ class module(threading.Thread):
 
     def imgupload(self, imgurl):
 
-        MEI = http.client.HTTPSConnection("mei.animebytes.tv")
-        meiurl = "https://mei.animebytes.tv/images/"
-        meiheader = {
-            "User-Agent" : "ScreenshotBot",
-            "Content-type" : "multipart/form-data; boundary=stopboundaryhere",
-            "Accept" : "text/html, application/xhtml+xml, */*",
-            "Host" : "mei.animebytes.tv"
-            }
+        MEI = http.client.HTTPSConnection(self.data["MEI"])
+        meiurl = self.data["meiurl"]
+        meiheader = self.data["meiheader"]
         
         reqbody = ""
         reqbody += "--stopboundaryhere\r\n"

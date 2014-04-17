@@ -11,9 +11,8 @@ class module(threading.Thread):
         super(module, self).__init__()
         self.msg = msg
         self.queue = queue
+        self.data = json.load(open("modules/data/AB-polls", "r"))
 
     def run(self):
         
-        # Sends the same message back to origin
-        self.queue.put(self.msg)
         return

@@ -37,9 +37,10 @@ class IRC:
         # Buffer for buffering messages from socket
         self.buffer = ""
 
-    # Returns a list containing a parsed IRC message
-    # :<prefix> <command> <params> :<trailing>
-    # ['prefix', 'command' '['param1', 'param2', '...']', 'trailing']
+    # Parses a IRC message into its components
+    # IRC MESSAGE FORMAT = ":<prefix> <command> <params> :<trailing>"
+    # Returns a server_msg dict - FORMAT:
+    # ['PRE':<prefix>, 'CMD':<cmd>, 'PARAMS':[<p1>, ...], 'MSG':<trailing>]
     def parse(self, line):
         
         # Helper function that finds the nth position of a substring
@@ -80,7 +81,7 @@ class IRC:
             return ""
 
     def writeSocket(self, string):
-        (read, write, excep) = select.select([], [self.s], [], 5)
+        (read, write, excep) = select.select([], [self.s], [], 10)
         try:
             write[0].sendall("{}\r\n".format(string)
                              .encode("utf-8", errors="ignore"))
@@ -89,12 +90,10 @@ class IRC:
             sys.exit(1)
 
     # Connect to the server using the information given
-    def connect(self, info):
-        
+    def connect(self, info):        
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.connect((self.HOST, self.PORT))
-        self.s.setblocking(0)
-        
+        self.s.setblocking(0)        
         self.writeSocket("NICK {}".format(self.NICK))
         self.writeSocket("USER {} 0 * :{}".format(self.IDENT, self.REALNAME))
 
@@ -114,7 +113,10 @@ class IRC:
             msg["TO"] = msg["FROM"][1:msg["FROM"].find("!")]
         self.sendcmd("PRIVMSG", [msg["TO"]], string)
 
-    # Processes IRC messages, returns a msg dict on PRIVMSG
+    # Processes IRC messages
+    # Returns a msg dict on PRIVMSG - FORMAT:
+    # ['FROM':<sender>, 'TO':<channel/user>, 'MSG':<message>]
+    # Returns None if server_msg is not a PRIVMSG
     def getmsg(self):
         
         # Append buffer with new incoming text
@@ -134,8 +136,8 @@ class IRC:
             if server_msg["CMD"] == "PING":
                 self.sendcmd("PONG", None, server_msg["MSG"])
         
-            # RPL_ENDOFMOTD - Use this message to JOIN channels at start
-            elif server_msg["CMD"] == "376":
+            # RPL_ENDOFMOTD / ERR_NOMOTD - join channels here
+            elif server_msg["CMD"] in ["376", "422"]:
                 channels = self.CHANNELS.split(",")
                 for c in channels:
                     self.sendcmd("JOIN", None, c)
