@@ -3,6 +3,7 @@ import os
 import re
 import imp
 import sys
+import time
 import json
 import queue
 import socket
@@ -178,6 +179,7 @@ except KeyError:
 
 while True:
 
+    time.sleep(0.05)
     msg = irc.getmsg()
     
     if msg:

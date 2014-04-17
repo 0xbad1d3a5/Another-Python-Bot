@@ -14,19 +14,8 @@ class Module(_BaseModule.BaseModule):
         self.data = json.load(open("modules/data/AB-mei", "r"))
 
     def run(self):
-        imgurl = self.msg["MSG"]
-        self.msg["MSG"] = self.imgupload(imgurl)
-        self.queue.put(self.msg)
+        self.sendmsg(self.imgupload(self.msg["MSG"]))
         return
-
-    def reqpage(self, conn, method, url, body, header):
-        try:
-            conn.request(method, url, body, header)
-            resp = conn.getresponse()
-            conn.close()
-            return resp
-        except:
-            return None
 
     def imgupload(self, imgurl):
 
@@ -43,13 +32,14 @@ class Module(_BaseModule.BaseModule):
         reqbody += "Upload\r\n"
         reqbody += "--stopboundaryhere"
         
-        resp = self.reqpage(MEI, "POST", "/upload_ac.php", reqbody, meiheader)
+        resp = self.reqPage(MEI, "POST", "/upload_ac.php", reqbody, meiheader)
         if resp != None:
             url = resp.getheader("Location")
             url = re.search("imageupload.php\?img=(.*)", url).group(1)
             url = meiurl + url
             if url != meiurl:
                 return url
-            return "ImageUpload Error"
+            else:
+                return "ImageUpload Error"
         else:
             return "ImageUpload Error"
