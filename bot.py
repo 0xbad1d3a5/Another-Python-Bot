@@ -109,10 +109,12 @@ class IRC:
         # Append buffer with new incoming text
         self.buffer = self.buffer + self.readSocket()
         
+        # Get a line and remove from buffer
         lineEnd = self.buffer.find("\n") + 1
         line = self.buffer[ : lineEnd]
         self.buffer = self.buffer[lineEnd : ]
-        
+
+        # If line is not empty, process it
         if line:
             
             msg = self.parse(line)
