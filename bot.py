@@ -1,14 +1,14 @@
 #!/usr/bin/python3
-import sys
 import os
 import re
-import socket
-import http.client
-import importlib
+import sys
+import imp
 import queue
+import socket
 import select
-import threading
+import importlib
 import traceback
+import http.client
 
 import modules
 
@@ -30,8 +30,6 @@ class IRC:
 
         # Buffer for buffering messages from socket
         self.buffer = ""
-        # Pending messages to write in case socket is not ready
-        self.outMsgs = [] 
 
     # Returns a list containing a parsed IRC message
     # :<prefix> <command> <params> :<trailing>
@@ -171,8 +169,8 @@ except KeyError:
     sys.exit(1)
 
 # Import the modules from the modules directory
-modules = [importlib.import_module("." + x, package="modules")
-           for x in modules.__all__]
+moduleList = [importlib.import_module("." + mod, package="modules")
+           for mod in modules.__all__]
 queue = queue.Queue()
 
 while True:
@@ -180,11 +178,25 @@ while True:
     msg = irc.getmsg()
     
     if msg:
-        for mod in modules:
+        
+        if msg["MSG"] == ".reload":
+            for mod in moduleList:
+                try:
+                    mod = imp.reload(mod)
+                except:
+                    irc.sendcmd(msg["CMD"], msg["PARAMS"], 
+                                "RELOAD {} FAILED".format(moduleClass))
+            irc.sendcmd(msg["CMD"], msg["PARAMS"], "Reloaded Modules")
+            
+        for mod in moduleList:
             moduleClass = getattr(mod, "module")
             if moduleClass.cmd == msg["MSG"][:len(moduleClass.cmd)]:
-                thread = moduleClass(msg, queue)
-                thread.start()
+                try:
+                    thread = moduleClass(msg, queue)
+                    thread.start()
+                except:
+                    irc.sendcmd(msg["CMD"], msg["PARAMS"], 
+                                "MODULE {} FAILED".format(moduleClass))
     
     while not queue.empty():
         reply = queue.get()

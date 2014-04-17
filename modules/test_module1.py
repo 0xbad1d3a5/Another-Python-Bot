@@ -12,5 +12,6 @@ class module(threading.Thread):
         self.queue = queue
 
     def run(self):
+        self.msg["MSG"] = "Yay modules!!"
         self.queue.put(self.msg)
         return
