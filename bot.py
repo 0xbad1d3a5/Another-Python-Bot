@@ -79,7 +79,7 @@ class IRC:
             write[0].sendall("{}\r\n".format(string)
                              .encode("utf-8", errors="ignore"))
         except:
-            print("Socket write error: blocked for more than 5s")
+            print("Socket write error")
             sys.exit(1)
 
     # Connect to the server using the information given
@@ -90,8 +90,7 @@ class IRC:
         self.s.setblocking(0)
         
         self.writeSocket("NICK {}".format(self.NICK))
-        self.writeSocket("USER {} 0 * :{}"
-                         .format(self.IDENT, self.REALNAME))
+        self.writeSocket("USER {} 0 * :{}".format(self.IDENT, self.REALNAME))
 
     # Send a command to IRC
     def sendcmd(self, cmd, params, msg):
@@ -101,7 +100,15 @@ class IRC:
         else:
             self.writeSocket("{} :{}".format(cmd, msg))
 
-    # Return one parsed line from the socket (only returns on PRIVMSG)
+    # Send a message to message origin on IRC
+    def sendmsg(self, msg, string):
+        # If it's a PM, then replace TO with sender
+        # This is so we don't try to send messages to ourself
+        if msg["TO"][:1] not in ['#', '$']:
+            msg["TO"] = msg["FROM"][1:msg["FROM"].find("!")]
+        self.sendcmd("PRIVMSG", [msg["TO"]], string)
+
+    # Processes IRC messages, returns a msg dict on PRIVMSG
     def getmsg(self):
         
         # Append buffer with new incoming text
@@ -115,36 +122,32 @@ class IRC:
         # If line is not empty, process it
         if line:
             
-            msg = self.parse(line)
+            server_msg = self.parse(line)
         
             # PING - play PING PONG with the server
-            if msg["CMD"] == "PING":
-                self.sendcmd("PONG", None, msg["MSG"])
+            if server_msg["CMD"] == "PING":
+                self.sendcmd("PONG", None, server_msg["MSG"])
         
             # RPL_ENDOFMOTD - Use this message to JOIN channels at start
-            elif msg["CMD"] == "376":
+            elif server_msg["CMD"] == "376":
                 channels = self.CHANNELS.split(",")
                 for c in channels:
                     self.sendcmd("JOIN", None, c)
     
             # INVITE - accept all channel invites automatically
-            elif msg["CMD"] == "INVITE":
-                self.sendcmd("JOIN", None, msg["MSG"])
+            elif server_msg["CMD"] == "INVITE":
+                self.sendcmd("JOIN", None, server_msg["MSG"])
 
             # PRIVMSG - any sort of message
-            elif msg["CMD"] == "PRIVMSG":
-                # If it's a PM, then replace <params> with sender
-                # This is so we don't try to send messages to ourself
-                if msg["PARAMS"][0][:1] not in ['#', '$']:
-                    msg["PARAMS"][0] = msg["PRE"][1:msg["PRE"].find("!")]
+            elif server_msg["CMD"] == "PRIVMSG":
+                return {"FROM" : server_msg["PRE"],
+                        "TO" : server_msg["PARAMS"][0],
+                        "MSG" : server_msg["MSG"]}
                 
             # UNIMPLEMENTED - do nothing for the rest of the commands
             else:
-                print("COMMAND {} - NEEDS HANDLING".format(msg["CMD"]))
-                print("prefix: {}\nparams: {}\ntrailing: {}"
-                      .format(msg["PRE"], msg["PARAMS"], msg["MSG"]))
-            
-            return msg
+                print("COMMAND {} - NEEDS HANDLING".format(server_msg["CMD"]))
+                print("prefix: {}\nparams: {}\ntrailing: {}".format(server_msg["PRE"], server_msg["PARAMS"], server_msg["MSG"]))
 
 ## MAIN PROGRAM ##
 ##################
@@ -184,20 +187,19 @@ while True:
                 try:
                     mod = imp.reload(mod)
                 except:
-                    irc.sendcmd(msg["CMD"], msg["PARAMS"], 
-                                "RELOAD {} FAILED".format(moduleClass))
-            irc.sendcmd(msg["CMD"], msg["PARAMS"], "Reloaded Modules")
+                    irc.sendmsg(msg, "RELOAD {} FAILED".format(moduleClass))
+            irc.sendmsg(msg, "Reloaded Modules")
             
         for mod in moduleList:
             moduleClass = getattr(mod, "module")
             if moduleClass.cmd == msg["MSG"][:len(moduleClass.cmd)]:
                 try:
+                    msg["MSG"] = msg["MSG"][len(moduleClass.cmd):].strip()
                     thread = moduleClass(msg, queue)
                     thread.start()
                 except:
-                    irc.sendcmd(msg["CMD"], msg["PARAMS"], 
-                                "MODULE {} FAILED".format(moduleClass))
+                    irc.sendmsg(msg, "MODULE {} FAILED".format(moduleClass))
     
     while not queue.empty():
         reply = queue.get()
-        irc.sendcmd(reply["CMD"], reply["PARAMS"], reply["MSG"])
+        irc.sendmsg(reply, reply["MSG"])
