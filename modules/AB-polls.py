@@ -2,15 +2,14 @@ import re
 import json
 import threading
 
-class Module(threading.Thread):
+from modules import _BaseModule
 
-    # Defines the command that triggers the module
+class Module(_BaseModule.BaseModule):
+
     cmd = ".poll"
 
     def __init__(self, msg, queue):
-        super(Module, self).__init__()
-        self.msg = msg
-        self.queue = queue
+        super(Module, self).__init__(msg, queue)
         self.data = json.load(open("modules/data/AB-polls", "r"))
 
     def run(self):

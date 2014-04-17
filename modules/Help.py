@@ -4,7 +4,6 @@ from modules import _BaseModule
 
 class Module(_BaseModule.BaseModule):
 
-    # Defines the command that triggers the module
     cmd = ".help"
 
     def __init__(self, msg, queue):

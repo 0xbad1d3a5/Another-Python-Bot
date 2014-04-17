@@ -12,5 +12,6 @@ class Module(_BaseModule.BaseModule):
 
     def run(self):
         
+        # Send "Hello World!" to the user/channel that triggered the command
         self.sendmsg("Hello World!")
         return

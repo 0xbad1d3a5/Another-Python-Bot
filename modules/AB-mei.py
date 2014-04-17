@@ -3,14 +3,14 @@ import http
 import json
 import re
 
-class Module(threading.Thread):
+from modules import _BaseModule
+
+class Module(_BaseModule.BaseModule):
 
     cmd = ".mei"
 
     def __init__(self, msg, queue):
-        super(Module, self).__init__()
-        self.msg = msg
-        self.queue = queue
+        super(Module, self).__init__(msg, queue)
         self.data = json.load(open("modules/data/AB-mei", "r"))
 
     def run(self):
