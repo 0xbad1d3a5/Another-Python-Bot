@@ -1,7 +1,5 @@
 import threading
 
-from datetime import datetime
-
 class module(threading.Thread):
 
     cmd = ".hello"
