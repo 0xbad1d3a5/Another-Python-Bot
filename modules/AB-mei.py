@@ -1,4 +1,3 @@
-import threading
 import http
 import json
 import re
@@ -13,7 +12,7 @@ class Module(_BaseModule.BaseModule):
         super(Module, self).__init__(msg, queue)
         self.data = json.load(open("modules/data/AB-mei", "r"))
 
-    def run(self):
+    def main(self):
         self.sendmsg(self.imgupload(self.msg["MSG"]))
         return
 

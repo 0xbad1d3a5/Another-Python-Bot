@@ -10,7 +10,7 @@ class Module(_BaseModule.BaseModule):
     def __init__(self, msg, queue):
         super(Module, self).__init__(msg, queue)
 
-    def run(self):
+    def main(self):
         
         # Send "Hello World!" to the user/channel that triggered the command
         self.sendmsg("Hello World!")

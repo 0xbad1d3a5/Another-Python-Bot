@@ -33,7 +33,7 @@ class IRC:
         self.NICK = info["NICK"]
         self.IDENT = info["IDENT"]
         self.REALNAME = info["REALNAME"]
-        self.EXTRA = info["EXTRA"]
+        self.EXTRAS = info["EXTRAS"]
 
         # Buffer for buffering messages from socket
         self.buffer = ""
@@ -121,11 +121,14 @@ class IRC:
             if server_msg["CMD"] == "PING":
                 self.sendcmd("PONG", None, server_msg["MSG"])
         
-            # RPL_ENDOFMOTD / ERR_NOMOTD - join channels here
+            # RPL_ENDOFMOTD / ERR_NOMOTD - finish joining server here
             elif server_msg["CMD"] in ["376", "422"]:
                 channels = self.CHANNELS.split(",")
                 for c in channels:
                     self.sendcmd("JOIN", None, c)
+                extras = self.EXTRAS
+                for e in extras:
+                    self.writeSocket(e)
     
             # INVITE - accept all channel invites automatically
             elif server_msg["CMD"] == "INVITE":
@@ -183,9 +186,10 @@ while True:
     msg = irc.getmsg()
     
     if msg:
-        
+        print("{} {}: {}".format(msg["TO"], msg["FROM"], msg["MSG"]))
         if msg["MSG"] == ".reload":
             for mod in moduleList:
+                moduleClass = getattr(mod, "Module")
                 try:
                     mod = imp.reload(mod)
                 except:

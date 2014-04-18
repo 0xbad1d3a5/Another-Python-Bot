@@ -1,4 +1,5 @@
 import http
+import inspect
 import threading
 import traceback
 
@@ -8,6 +9,21 @@ class BaseModule(threading.Thread):
         super(BaseModule, self).__init__()
         self.msg = msg
         self.queue = queue
+        
+    # Main entrypoint for thread, override this
+    def main(self):
+        raise NotImplementedError
+
+    # Do not override! Allows bot to inform sender a module has crashed
+    def run(self):
+        try:
+            self.main()
+        except:
+            mem = inspect.getmembers(self)
+            name = [n[1] for n in mem if n[0] == "__class__"][0]
+            self.sendmsg("Thread {} has crashed!"
+                    .format(name))
+            print(traceback.print_exc())
 
     # Send a message to where the message came from (either user/channel)
     def sendmsg(self, string):

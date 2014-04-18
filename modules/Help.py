@@ -1,5 +1,3 @@
-import threading
-
 from modules import _BaseModule
 
 class Module(_BaseModule.BaseModule):
@@ -9,7 +7,7 @@ class Module(_BaseModule.BaseModule):
     def __init__(self, msg, queue):
         super(Module, self).__init__(msg, queue)
 
-    def run(self):
+    def main(self):
 
         self.sendpm(".mei [url] - upload a image to AB")
         self.sendpm(".poll <url> <opt> - display poll results on AB")
