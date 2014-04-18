@@ -21,6 +21,7 @@ class Module(_BaseModule.BaseModule):
         site = self.data["site"]
         AB = http.client.HTTPSConnection(site)
         webheader = self.data["webheader"]
+        polldict = self.data["polldict"]
         logininfo = urllib.parse.urlencode(self.data["logininfo"])
         args = [x for x in self.msg["MSG"].split(' ') if x]
 
@@ -38,7 +39,7 @@ class Module(_BaseModule.BaseModule):
 
         # Try to search for a expanded version of args[0]
         try:
-            temp_url = self.data[args[0]]
+            temp_url = polldict[args[0]]
         except:
             temp_url = args[0]
 
@@ -54,7 +55,7 @@ class Module(_BaseModule.BaseModule):
             if check == 1 or check == 2:
                 # If it's 3 arguments, add to dictionary, ignore extra args
                 if len(args) >= 2:
-                    self.data[args[1]] = args[0]
+                    polldict[args[1]] = args[0]
                     json.dump(self.data, 
                               open("modules/data/AB-polls", "w"), indent=4)
                 # Run the poll command
@@ -91,6 +92,7 @@ class Module(_BaseModule.BaseModule):
     def pollvotes(self, page):
         question = re.search("(?<=id=\"threadpoll\").*?<strong>.*?<[/]strong>", page, re.DOTALL).group(0)
         question = re.search("(?<=<strong>).*(?=<[/]strong>)", question).group(0)
+        question = html.parser.HTMLParser().unescape(question)
         series = re.findall("(?<=<li class=\"tleft\">).*(?=</li>)", page)
         percent = re.compile("(?<=\()\d{0,3}\.?\d{2}(?=\%\))")
         
