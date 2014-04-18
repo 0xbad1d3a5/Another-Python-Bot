@@ -123,12 +123,12 @@ class IRC:
         
             # RPL_ENDOFMOTD / ERR_NOMOTD - finish joining server here
             elif server_msg["CMD"] in ["376", "422"]:
-                channels = self.CHANNELS.split(",")
-                for c in channels:
-                    self.sendcmd("JOIN", None, c)
                 extras = self.EXTRAS
                 for e in extras:
                     self.writeSocket(e)
+                channels = self.CHANNELS.split(",")
+                for c in channels:
+                    self.sendcmd("JOIN", None, c)
     
             # INVITE - accept all channel invites automatically
             elif server_msg["CMD"] == "INVITE":
