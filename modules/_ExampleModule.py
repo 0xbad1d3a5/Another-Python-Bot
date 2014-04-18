@@ -1,5 +1,3 @@
-import threading
-
 from modules import _BaseModule
 
 class Module(_BaseModule.BaseModule):
