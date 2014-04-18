@@ -12,5 +12,5 @@ class Module(_BaseModule.BaseModule):
     def run(self):
 
         self.sendpm(".mei [url] - upload a image to AB")
-        self.sendpm(".poll <optional> [url] - display poll results on AB")
+        self.sendpm(".poll <url> <opt> - display poll results on AB")
         return

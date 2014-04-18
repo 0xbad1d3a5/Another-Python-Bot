@@ -62,22 +62,6 @@ class IRC:
         self.writeSocket("NICK {}".format(self.NICK))
         self.writeSocket("USER {} 0 * :{}".format(self.IDENT, self.REALNAME))
 
-    # Send a command to IRC
-    def sendcmd(self, cmd, params, msg):
-        if params:
-            params = " ".join(params)
-            self.writeSocket("{} {} :{}".format(cmd, params, msg))
-        else:
-            self.writeSocket("{} :{}".format(cmd, msg))
-
-    # Send a message to message origin on IRC
-    def sendmsg(self, msg, string):
-        # If it's a PM, then replace TO with sender
-        # This is so we don't try to send messages to ourself
-        if msg["TO"][:1] not in ['#', '$']:
-            msg["TO"] = msg["FROM"][1:msg["FROM"].find("!")]
-        self.sendcmd("PRIVMSG", [msg["TO"]], string)
-
     # Parses a IRC message into its components
     # IRC MESSAGE FORMAT = ":<prefix> <command> <params> :<trailing>\r\n"
     # Returns a server_msg dict - FORMAT:
@@ -157,6 +141,22 @@ class IRC:
             else:
                 print("COMMAND {} - NEEDS HANDLING".format(server_msg["CMD"]))
                 print("prefix: {}\nparams: {}\ntrailing: {}".format(server_msg["PRE"], server_msg["PARAMS"], server_msg["MSG"]))
+
+    # Send a command to IRC
+    def sendcmd(self, cmd, params, msg):
+        if params:
+            params = " ".join(params)
+            self.writeSocket("{} {} :{}".format(cmd, params, msg))
+        else:
+            self.writeSocket("{} :{}".format(cmd, msg))
+
+    # Send a message to message origin on IRC
+    def sendmsg(self, msg, string):
+        # If it's a PM, then replace TO with sender
+        # This is so we don't try to send messages to ourself
+        if msg["TO"][:1] not in ['#', '$']:
+            msg["TO"] = msg["FROM"][1:msg["FROM"].find("!")]
+        self.sendcmd("PRIVMSG", [msg["TO"]], string)
 
 ## MAIN PROGRAM ##
 ##################
