@@ -32,8 +32,6 @@ class Module(_BaseModule.BaseModule):
             if [x for x in cookie if "session=" in x]:
                 cookie = [x for x in cookie if "session=" in x][0].split(";")[0]
                 webheader.update({"Cookie" : cookie})
-                json.dump(self.data, 
-                          open("modules/data/AB-polls", "w"), indent=4)
         else:
             self.sendmsg("Login Failed")
 
@@ -56,6 +54,7 @@ class Module(_BaseModule.BaseModule):
                 # If it's 3 arguments, add to dictionary, ignore extra args
                 if len(args) >= 2:
                     polldict[args[1]] = args[0]
+                    del webheader["Cookie"]
                     json.dump(self.data, 
                               open("modules/data/AB-polls", "w"), indent=4)
                 # Run the poll command
