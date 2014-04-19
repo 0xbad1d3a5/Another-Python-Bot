@@ -8,7 +8,6 @@ class Module(_BaseModule.BaseModule):
         super(Module, self).__init__(msg, queue)
 
     def main(self):
-
         self.sendpm(".mei [url] - upload a image to AB")
         self.sendpm(".poll <url> <opt> - display poll results on AB")
         return

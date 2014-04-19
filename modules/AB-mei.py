@@ -1,6 +1,6 @@
+import re
 import http
 import json
-import re
 
 from modules import _BaseModule
 
@@ -30,7 +30,7 @@ class Module(_BaseModule.BaseModule):
         reqbody += "Content-Disposition: form-data; name=\"Submit\"\r\n\r\n"
         reqbody += "Upload\r\n"
         reqbody += "--stopboundaryhere"
-        
+
         resp = self.reqPage(MEI, "POST", "/upload_ac.php", reqbody, meiheader)
         if resp != None:
             url = resp.getheader("Location")
@@ -39,6 +39,6 @@ class Module(_BaseModule.BaseModule):
             if url != meiurl:
                 return url
             else:
-                return "ImageUpload Error"
+                return "ImageUpload Error: No image found"
         else:
-            return "ImageUpload Error"
+            return "ImageUpload Error: No response"
