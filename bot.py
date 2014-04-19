@@ -132,7 +132,8 @@ class Bot:
                "TO" : server_msg["PARAMS"][0],
                "MSG" : server_msg["MSG"]}
 
-        print("{} {}: {}".format(msg["TO"], msg["FROM"], msg["MSG"]))
+        print("{} {}: {}".format(msg["TO"], msg["FROM"], msg["MSG"])
+              .encode("utf-8"))
         
         if msg["MSG"] == ".reload":
             self.reloadmodules(msg)

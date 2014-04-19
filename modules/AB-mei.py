@@ -10,7 +10,7 @@ class Module(_BaseModule.BaseModule):
 
     def __init__(self, msg, queue):
         super(Module, self).__init__(msg, queue)
-        self.data = json.load(open("modules/data/AB-mei", "r"))
+        self.data = json.load(open("data/AB-mei", "r"))
 
     def main(self):
         self.sendmsg(self.imgupload(self.msg["MSG"]))
