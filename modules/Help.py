@@ -9,5 +9,5 @@ class Module(_BaseModule.BaseModule):
 
     def main(self):
         self.sendpm(".mei [url] - upload a image to AB")
-        self.sendpm(".poll <url> <opt> - display poll results on AB")
+        self.sendpm(".poll <url/opt> <opt> - display poll results on AB")
         return

@@ -24,7 +24,7 @@ class IRC:
     def readSocket(self):
         (read, write, excep) = select.select([self.s], [], [], 0)
         if read:
-            return read[0].recv(512).decode("utf-8")
+            return read[0].recv(512).decode("utf-8", errors="ignore")
         else:
             return ""
 

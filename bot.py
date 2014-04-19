@@ -153,5 +153,5 @@ class Bot:
 
 if __name__ == "__main__":
     
-    AB = Bot("info")
+    AB = Bot("infoc")
     AB.run()
