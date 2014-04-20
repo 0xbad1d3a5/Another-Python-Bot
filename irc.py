@@ -21,14 +21,28 @@ class IRC:
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.buffer = ""
 
-    def readSocket(self):
+    def read(self):
         (read, write, excep) = select.select([self.s], [], [], 0)
         if read:
             return read[0].recv(512).decode("utf-8", errors="ignore")
         else:
             return ""
 
-    def writeSocket(self, string):
+    def write(self, cmd, text=None):
+        temp = ' '.join(cmd)
+        if text:
+            temp = "{} :{}".format(temp, text)[:510]
+        temp = temp + "\r\n"
+        
+        (read, write, excep) = select.select([], [self.s], [], 10)
+        try:
+            write[0].sendall(temp.encode("utf-8", errors="ignore"))
+        except:
+            print("Socket write error")
+            sys.exit(1)
+
+    # Send a raw command to IRC
+    def write_raw(self, string):
         (read, write, excep) = select.select([], [self.s], [], 10)
         try:
             write[0].sendall("{}\r\n".format(string)
@@ -37,32 +51,12 @@ class IRC:
             print("Socket write error")
             sys.exit(1)
 
-    # Send a raw command to IRC
-    def sendraw(self, string):
-        self.writeSocket(string)
-
-    # Send a command to IRC
-    def sendcmd(self, cmd, params, msg):
-        if params:
-            params = " ".join(params)
-            self.writeSocket("{} {} :{}".format(cmd, params, msg))
-        else:
-            self.writeSocket("{} :{}".format(cmd, msg))
-
-    # Send a message to message origin on IRC
-    def sendmsg(self, msg, string):
-        # If it's a PM, then replace TO with sender
-        # This is so we don't try to send messages to ourself
-        if msg["TO"][:1] not in ['#', '$']:
-            msg["TO"] = msg["FROM"][1:msg["FROM"].find("!")]
-        self.sendcmd("PRIVMSG", [msg["TO"]], string)
-
     # Connect to the server using the information given
     def connect(self):        
         self.s.connect((self.HOST, self.PORT))
         self.s.setblocking(0)        
-        self.writeSocket("NICK {}".format(self.NICK))
-        self.writeSocket("USER {} 0 * :{}".format(self.IDENT, self.REALNAME))
+        self.write(("NICK", self.NICK))
+        self.write(("USER", self.IDENT, "0", "*"), self.REALNAME)
 
     # Parses a IRC message into its components
     # IRC MESSAGE FORMAT = ":<prefix> <command> <params> :<trailing>\r\n"
@@ -104,7 +98,7 @@ class IRC:
     def getmsg(self):
         
         # Append buffer with new incoming text
-        self.buffer = self.buffer + self.readSocket()
+        self.buffer = self.buffer + self.read()
         
         # Get a line and remove from buffer
         lineEnd = self.buffer.find("\n") + 1

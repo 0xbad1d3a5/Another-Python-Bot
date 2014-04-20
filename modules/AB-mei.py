@@ -6,10 +6,10 @@ from modules import _BaseModule
 
 class Module(_BaseModule.BaseModule):
 
-    cmd = ".mei"
+    cmd = ".mei "
 
-    def __init__(self, msg, queue):
-        super(Module, self).__init__(msg, queue)
+    def __init__(self, msg, comm):
+        super(Module, self).__init__(msg, comm)
         self.data = json.load(open("data/AB-mei", "r"))
 
     def main(self):

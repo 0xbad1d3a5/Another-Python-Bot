@@ -1,8 +1,6 @@
 import os
+import re
 
-# Accept file as part of module if it ends in ".py" and is not listed below
-__all__ = [x[:-3] for x in os.listdir("./modules")
-           if x[-3:] == ".py"
-           and x != "__init__.py"
-           and x != "_BaseModule.py"
-           and x != "_ExampleModule.py"]
+# Accept file as part of module if it ends in ".py" and does not being with "_"
+search = re.compile("(?!_).*(?=.py$)")
+__all__ = [f[:-3] for f in os.listdir("./modules") if search.match(f)]

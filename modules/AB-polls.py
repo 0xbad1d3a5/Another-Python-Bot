@@ -7,23 +7,24 @@ import html.parser
 
 from modules import _BaseModule
 
+# TODO: Switch from JSON to sqlite3 so writes are ACID
 class Module(_BaseModule.BaseModule):
 
-    cmd = ".poll"
+    cmd = ".poll "
 
-    def __init__(self, msg, queue):
-        super(Module, self).__init__(msg, queue)
+    def __init__(self, msg, comm):
+        super(Module, self).__init__(msg, comm)
         self.data = json.load(open("data/AB-polls", "r"))
 
     def main(self):
 
         # Set some variables from loaded json file and message
+        args = self.args
         site = self.data["site"]
         AB = http.client.HTTPSConnection(site)
         webheader = self.data["webheader"]
         polldict = self.data["polldict"]
         logininfo = urllib.parse.urlencode(self.data["logininfo"])
-        args = [x for x in self.msg["MSG"].split(' ') if x]
 
         # Login to AB and set cookie in webheader
         resp = self.reqPage(AB, "POST", "/login.php", logininfo, webheader)
