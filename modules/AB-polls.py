@@ -12,8 +12,8 @@ class Module(_BaseModule.BaseModule):
 
     cmd = ".poll "
 
-    def __init__(self, msg, comm):
-        super(Module, self).__init__(msg, comm)
+    def __init__(self, msg, share):
+        super(Module, self).__init__(msg, share)
         self.data = json.load(open("data/AB-polls", "r"))
 
     def main(self):
@@ -57,7 +57,7 @@ class Module(_BaseModule.BaseModule):
                     polldict[args[1]] = args[0]
                     del webheader["Cookie"]
                     json.dump(self.data, 
-                              open("modules/data/AB-polls", "w"), indent=4)
+                              open("data/AB-polls", "w"), indent=4)
                 # Run the poll command
                 self.pollvotes(page)
 
@@ -115,5 +115,5 @@ class Module(_BaseModule.BaseModule):
                 pad = ' ' * (maxlen_title - len(vote[0]))
                 self.sendmsg("{}{} {}".format(pad, vote[0], vote[2]))
             else:
-                self.sendmsg(vote[0])
-                self.sendmsg(vote[2])
+                self.sendmsg("{} ".format(vote[0]))
+                self.sendmsg("{} ".format(vote[2]))

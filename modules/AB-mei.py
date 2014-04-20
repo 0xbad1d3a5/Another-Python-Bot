@@ -8,8 +8,8 @@ class Module(_BaseModule.BaseModule):
 
     cmd = ".mei "
 
-    def __init__(self, msg, comm):
-        super(Module, self).__init__(msg, comm)
+    def __init__(self, msg, share):
+        super(Module, self).__init__(msg, share)
         self.data = json.load(open("data/AB-mei", "r"))
 
     def main(self):

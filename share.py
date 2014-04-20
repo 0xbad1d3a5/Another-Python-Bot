@@ -1,6 +1,9 @@
 import queue
 import sqlite3
+import importlib
 import threading
+
+import modules
 
 #### MESSAGE PASSING CLASS ####
 ###############################
@@ -9,6 +12,8 @@ import threading
 class Share:
     
     def __init__(self):
+
+        self.moduleList = [importlib.import_module("." + mod, package="modules") for mod in modules.__all__]
         self.queue = queue.Queue()
         self.db_lock = threading.Lock()
         self.db_uri = "database.db"

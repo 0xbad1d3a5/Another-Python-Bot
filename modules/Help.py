@@ -4,8 +4,8 @@ class Module(_BaseModule.BaseModule):
 
     cmd = ".help"
 
-    def __init__(self, msg, comm):
-        super(Module, self).__init__(msg, comm)
+    def __init__(self, msg, share):
+        super(Module, self).__init__(msg, share)
 
     def main(self):
         self.sendpm(".mei [url] - upload a image to AB")

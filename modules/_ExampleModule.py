@@ -5,8 +5,8 @@ class Module(_BaseModule.BaseModule):
     # Defines the command that triggers the module
     cmd = ".example_command"
 
-    def __init__(self, msg, comm):
-        super(Module, self).__init__(msg, comm)
+    def __init__(self, msg, share):
+        super(Module, self).__init__(msg, share)
 
     def main(self):
         
