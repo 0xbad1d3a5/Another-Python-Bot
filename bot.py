@@ -49,10 +49,8 @@ class Bot:
             # Handle IRC commands
             server_msg = self.irc.getmsg()
             if server_msg:
-                try:
-                    self.handle(server_msg)
-                except:
-                    traceback.print_exc()
+                try: self.handle(server_msg)
+                except: traceback.print_exc()
 
             # Process responses from modules
             while not self.share.empty():
@@ -144,13 +142,9 @@ class Bot:
         msg = {"FROM" : server_msg["PRE"],
                "TO" : server_msg["PARAMS"][0],
                "MSG" : server_msg["MSG"]}
-        try:
-            self.runmodules(msg)
-        except:
-            traceback.print_exc()
+        self.runmodules(msg)
 
-        if msg["MSG"][:5] == ".raw ":
-            self.irc.write_raw(msg["MSG"][5:])
+        if msg["MSG"][:5] == ".raw ": self.irc.write_raw(msg["MSG"][5:])
             
         print("{} {}: {}".format(msg["TO"], msg["FROM"], msg["MSG"]).encode("utf-8"))
 
