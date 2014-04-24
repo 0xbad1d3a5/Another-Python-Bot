@@ -30,10 +30,22 @@ class Bot:
 
         # Get settings from info file and connect the bot
         try:
+            # Load info file
+            info = json.load(open(info_filename, "r"))
+            # Set variables
+            self.HOST = info["HOST"]
+            self.PORT = int(info["PORT"])
+            self.CHANNELS = info["CHANNELS"]
+            self.NICK = info["NICK"]
+            self.IDENT = info["IDENT"]
+            self.REALNAME = info["REALNAME"]
+            self.EXTRAS = info["EXTRAS"]
+            # Make socket
+            self.irc = IRC(self.HOST, self.PORT)
+            # Connect to IRC
+            self.connect()
+            # Initialize Share class
             self.share = Share()
-            self.info = json.load(open(info_filename, "r"))
-            self.irc = IRC(self.info)
-            self.irc.connect()
         except:
             print("\"info\" file not found or syntax error")
             traceback.print_exc()
@@ -56,6 +68,11 @@ class Bot:
             while not self.share.empty():
                 response = self.share.get()
                 self.sendmsg(response, response["MSG"])
+
+    # Connect to the server using the information given
+    def connect(self):
+        self.irc.write(("NICK", self.NICK))
+        self.irc.write(("USER", self.IDENT, "0", "*"), self.REALNAME)
 
     # Send a message to message origin on IRC
     def sendmsg(self, msg, string):
@@ -125,10 +142,10 @@ class Bot:
     def handle_376(self, server_msg):
         self.handle_422(server_msg)
     def handle_422(self, server_msg):
-        extras = self.irc.EXTRAS
+        extras = self.EXTRAS
         for e in extras:
             self.irc.write_raw(e)
-        channels = self.irc.CHANNELS.split(",")
+        channels = self.CHANNELS.split(",")
         for c in channels:
             self.irc.write(("JOIN",), c)
     

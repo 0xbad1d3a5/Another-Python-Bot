@@ -8,17 +8,10 @@ class IRC:
     
     # Initialize the variables for IRC stuff
     # info is a dictionary containing connection information
-    def __init__(self, info):
-        
-        self.HOST = info["HOST"]
-        self.PORT = int(info["PORT"])
-        self.CHANNELS = info["CHANNELS"]
-        self.NICK = info["NICK"]
-        self.IDENT = info["IDENT"]
-        self.REALNAME = info["REALNAME"]
-        self.EXTRAS = info["EXTRAS"]
-
+    def __init__(self, HOST, PORT):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s.connect((HOST, PORT))
+        self.s.setblocking(0)
         self.buffer = ""
 
     def read(self):
@@ -50,13 +43,6 @@ class IRC:
         except:
             print("Socket write error")
             sys.exit(1)
-
-    # Connect to the server using the information given
-    def connect(self):        
-        self.s.connect((self.HOST, self.PORT))
-        self.s.setblocking(0)        
-        self.write(("NICK", self.NICK))
-        self.write(("USER", self.IDENT, "0", "*"), self.REALNAME)
 
     # Parses a IRC message into its components
     # IRC MESSAGE FORMAT = ":<prefix> <command> <params> :<trailing>\r\n"
