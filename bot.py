@@ -18,9 +18,35 @@ from irc import IRC
 #######################
 class Message:
 
-    def __init__(self, privmsg):
-        pass
+    def __init__(self, server_msg):
+        
+        nick_match = re.compile("(:(.*)!(.*)@(.*))|(.+)")
+        
+        from_name = re.search(nick_match, server_msg["PRE"])
+        to_name = re.search(nick_match, server_msg["PARAMS"][0])
 
+        self.from_nick = ""
+        self.from_user = ""
+        self.from_host = ""
+        self.to_nick = ""
+        self.to_user = ""
+        self.to_host = ""
+        self.msg = server_msg["MSG"]
+        
+        if from_name.group(5):
+            self.from_nick = from_name.group(5)
+        else:
+            self.from_nick = from_name.group(2)
+            self.from_user = from_name.group(3)
+            self.from_host = from_name.group(4)
+        
+        if to_name.group(5):
+            self.to_nick = to_name.group(5)
+        else:
+            self.to_nick = to_name.group(2)
+            self.to_nick = to_name.group(3)
+            self.to_nick = to_name.group(4)
+        
 #### IRC BOT CLASS ####
 #######################
 # This class decides what to do with the messages from IRC
@@ -155,7 +181,14 @@ class Bot:
 
     # PRIVMSG - Any sort of message
     def handle_PRIVMSG(self, server_msg):
-
+        
+        print(server_msg)
+        
+        try:
+            msg = Message(server_msg)
+        except:
+            traceback.print_exc()
+        
         msg = {"FROM" : server_msg["PRE"],
                "TO" : server_msg["PARAMS"][0],
                "MSG" : server_msg["MSG"]}
