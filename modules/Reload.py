@@ -52,5 +52,5 @@ class Module(_BaseModule.BaseModule):
                 remove_modules.append(mod)
 
         # Removes unloadable modules from known modules and adds new modules
-        self.write_modulelist([m for m in current_modules if m not in remove_modules] + new_modules)
+        self.share.write_modulelist([m for m in current_modules if m not in remove_modules] + new_modules)
         self.sendmsg("RELOADED MODULES FOLDER")

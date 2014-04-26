@@ -34,6 +34,6 @@ class Share:
 
     def get_modulelist(self): return self.modulelist
     def write_modulelist(self, modulelist):
-        self.modulelist_lock.lock()
+        self.modulelist_lock.acquire()
         self.modulelist = modulelist
         self.modulelist_lock.release()
