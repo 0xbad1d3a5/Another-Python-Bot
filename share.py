@@ -9,31 +9,31 @@ import modules
 ###############################
 # This class facilitates communication between the Bot and Modules
 # It also contains variables that need to be shared between the two
+#
+# This class honestly introduces some race conditions but IRC has network delay, so it really shouldn't happen
 class Share:
     
-    def __init__(self):
+    def __init__(self, info):
 
-        self.moduleList = [importlib.import_module("." + mod, package="modules") for mod in modules.__all__]
+        self.HOST = info["HOST"]
+        self.PORT = info["PORT"]
+        self.NICK = info["NICK"]
+        self.IDENT = info["IDENT"]
+        self.EXTRAS = info["EXTRAS"]
+        self.REALNAME = info["REALNAME"]
+        self.CHANNELS = info["CHANNELS"]
+
         self.queue = queue.Queue()
-        self.db_lock = threading.Lock()
-        self.db_uri = "database.db"
 
-    def put(self, msg):
-        self.queue.put(msg)
+        self.modulelist = [importlib.import_module("." + mod, package="modules") for mod in modules.__all__]
+        self.modulelist_lock = threading.Lock()
 
-    def get(self):
-        return self.queue.get()
+    def get_queue(self): return self.queue.get()
+    def put_queue(self, msg): self.queue.put(msg)
+    def empty_queue(self): return self.queue.empty()
 
-    def empty(self):
-        return self.queue.empty()
-
-    def lock(self):
-        self.db_lock.acquire()
-        
-    def release(self):
-        self.db_lock.release()
-
-    def pretend(self):
-        self.lock()
-        time.sleep(5)
-        self.release()
+    def get_modulelist(self): return self.modulelist
+    def write_modulelist(self, modulelist):
+        self.modulelist_lock.lock()
+        self.modulelist = modulelist
+        self.modulelist_lock.release()

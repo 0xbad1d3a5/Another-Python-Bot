@@ -14,17 +14,17 @@ class Module(_BaseModule.BaseModule):
 
     def __init__(self, msg, share):
         super(Module, self).__init__(msg, share)
-        self.data = json.load(open("data/AB-polls", "r"))
 
     def main(self):
 
         # Set some variables from loaded json file and message
+        data = json.load(open("data/AB-polls", "r"))
         args = self.args
-        site = self.data["site"]
+        site = data["site"]
         AB = http.client.HTTPSConnection(site)
-        webheader = self.data["webheader"]
-        polldict = self.data["polldict"]
-        logininfo = urllib.parse.urlencode(self.data["logininfo"])
+        webheader = data["webheader"]
+        polldict = data["polldict"]
+        logininfo = urllib.parse.urlencode(data["logininfo"])
 
         # Login to AB and set cookie in webheader
         resp = self.reqPage(AB, "POST", "/login.php", logininfo, webheader)
@@ -37,17 +37,14 @@ class Module(_BaseModule.BaseModule):
             self.sendmsg("Login Failed")
 
         # Try to search for a expanded version of args[0]
-        try:
-            temp_url = polldict[args[0]]
-        except:
-            temp_url = args[0]
+        try: temp_url = polldict[args[0]]
+        except: temp_url = args[0]
 
         pollurl = urllib.parse.urlparse(temp_url)
         
         # If the URL is from AB, proceed
         if site == pollurl.netloc:
-            page = self.reqHTML(AB, "GET", pollurl.path + '?' 
-                                + pollurl.query, None, webheader)
+            page = self.reqHTML(AB, "GET", pollurl.path + '?' + pollurl.query, None, webheader)
             check = self.checkpoll(page)
             if check == 2:
                 page = self.voteblank(AB, pollurl, webheader)
@@ -56,13 +53,11 @@ class Module(_BaseModule.BaseModule):
                 if len(args) >= 2:
                     polldict[args[1]] = args[0]
                     del webheader["Cookie"]
-                    json.dump(self.data, 
-                              open("data/AB-polls", "w"), indent=4)
+                    json.dump(data, open("data/AB-polls", "w"), indent=4)
                 # Run the poll command
                 self.pollvotes(page)
 
-        # Otherwise deny the request or we will end up sending the session
-        # cookie to a potentially malicious server
+        # Deny request or sends the session cookie to a potentially malicious server
         else:
             self.sendmsg("Check URL")
 
@@ -74,8 +69,7 @@ class Module(_BaseModule.BaseModule):
         haspoll = re.search("id=\"threadpoll\"", page)
         if haspoll:
             not_voted = re.search("id=\"answer_0\"", page)
-            if not_voted:
-                return 2
+            if not_voted: return 2
             return 1
         else:
             return 0
@@ -85,8 +79,7 @@ class Module(_BaseModule.BaseModule):
         threadid = re.search("threadid=[0-9]*", pollurl.query).group(0)
         reqbody = "action=poll&large=1&" + threadid + "&vote=0"
         self.reqPage(AB, "POST", "/index.php", reqbody, webheader)
-        return self.reqHTML(AB, "GET", pollurl.path + '?'
-                            + pollurl.query, None, webheader)
+        return self.reqHTML(AB, "GET", pollurl.path + '?' + pollurl.query, None, webheader)
 
     # Parse the HTML, format and send the poll for IRC
     def pollvotes(self, page):

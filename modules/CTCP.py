@@ -3,7 +3,7 @@ from modules import _BaseModule
 class Module(_BaseModule.BaseModule):
 
     # Defines the command that triggers the module
-    cmd = ".ctcp"
+    regex = "\001VERSION\001"
 
     def __init__(self, msg, share):
         super(Module, self).__init__(msg, share)

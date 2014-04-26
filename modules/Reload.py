@@ -15,7 +15,6 @@ class Module(_BaseModule.BaseModule):
     def __init__(self, msg, share):
         super(Module, self).__init__(msg, share)
 
-
     def main(self):
         self.reloadmodules()
         return
@@ -27,36 +26,31 @@ class Module(_BaseModule.BaseModule):
 
         # Reload the modules folder, find any new modules
         imp.reload(modules)
-        modules_old = [os.path.basename(inspect.getfile(m))[:-3]
-                       for m in self.share.moduleList]
-        modules_all = modules.__all__
-        new_modules_name = [m for m in modules_all if m not in modules_old]
+        current_modules = self.share.get_modulelist()
+        old_module_names = [os.path.basename(inspect.getfile(m))[:-3] for m in current_modules]
+        all_module_names = modules.__all__
+        new_module_names = [m for m in all_module_names if m not in old_module_names]
         new_modules = []
         remove_modules = []
 
         # Load new modules
-        for mod in new_modules_name:
+        for mod in new_module_names:
             try:
-                new_mod = importlib.import_module("." + mod, 
-                                                  package="modules")
+                new_mod = importlib.import_module("." + mod, package="modules")
                 new_modules.append(new_mod)
                 self.sendmsg("LOAD NEW MODULE {}".format(mod))
             except:
                 self.sendmsg("LOAD NEW MODULE {} FAILED".format(mod))
 
         # Reloads all known modules
-        for mod in self.share.moduleList:
+        for mod in current_modules:
             moduleClass = getattr(mod, "Module")
             try:
                 mod = imp.reload(mod)
             except:
                 self.sendmsg("RELOAD MODULE {} FAILED".format(moduleClass))
                 remove_modules.append(mod)
-                traceback.print_exc()
 
-        # Removes unloadable modules from known modules
-        self.share.moduleList = [m for m in self.share.moduleList
-                           if m not in remove_modules]
-                
-        self.share.moduleList = self.share.moduleList + new_modules
+        # Removes unloadable modules from known modules and adds new modules
+        self.write_modulelist([m for m in current_modules if m not in remove_modules] + new_modules)
         self.sendmsg("RELOADED MODULES FOLDER")

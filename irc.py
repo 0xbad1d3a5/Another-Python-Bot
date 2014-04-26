@@ -1,16 +1,16 @@
+import sys
 import socket
 import select
+import traceback
 
-## IRC COMMUNICATION CLASS ##
-#############################
+#### IRC COMMUNICATION CLASS ####
+#################################
 # This class communicates with the IRC server
 class IRC:
     
-    # Initialize the variables for IRC stuff
-    # info is a dictionary containing connection information
     def __init__(self, HOST, PORT):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.connect((HOST, PORT))
+        self.s.connect((HOST, int(PORT)))
         self.s.setblocking(0)
         self.buffer = ""
 
@@ -21,33 +21,19 @@ class IRC:
         else:
             return ""
 
-    def write(self, cmd, text=None):
-        temp = ' '.join(cmd)
-        if text:
-            temp = "{} :{}".format(temp, text)[:510]
-        temp = temp + "\r\n"
-        
+    def write(self, string):
         (read, write, excep) = select.select([], [self.s], [], 10)
         try:
-            write[0].sendall(temp.encode("utf-8", errors="ignore"))
+            write[0].sendall(string.encode("utf-8", errors="ignore"))
         except:
             print("Socket write error")
             sys.exit(1)
 
-    # Send a raw command to IRC
-    def write_raw(self, string):
-        (read, write, excep) = select.select([], [self.s], [], 10)
-        try:
-            write[0].sendall("{}\r\n".format(string)
-                             .encode("utf-8", errors="ignore"))
-        except:
-            print("Socket write error")
-            sys.exit(1)
-
-    # Parses a IRC message into its components
-    # IRC MESSAGE FORMAT = ":<prefix> <command> <params> :<trailing>\r\n"
-    # Returns a server_msg dict - FORMAT:
-    # ['PRE':<prefix>, 'CMD':<cmd>, 'PARAMS':[<p1>, ...], 'MSG':<trailing>]
+    """
+    Parses a IRC message into its components
+    IRC MESSAGE FORMAT = ":<prefix> <command> <params> :<trailing>\r\n"
+    Returns a tuple in the format (pre, cmd, args, msg)
+    """
     def parse(self, line):
         
         # Helper function that finds the nth position of a substring
@@ -76,9 +62,9 @@ class IRC:
             trailingStart = findn(line, " :", 1)
             trailing = line[trailingStart + 2 : ].strip()
 
-        cmdparam = line[prefixEnd : trailingStart].strip().split(" ")       
-        return {"PRE":prefix, "CMD":cmdparam[0],
-                "PARAMS":cmdparam[1:], "MSG":trailing}
+        cmdparam = line[prefixEnd : trailingStart].strip().split(" ")
+
+        return (prefix, cmdparam[0], cmdparam[1:], trailing)
 
     # Returns one server_msg from the buffer, or None
     def getmsg(self):

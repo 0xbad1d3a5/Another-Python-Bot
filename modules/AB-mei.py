@@ -13,7 +13,7 @@ class Module(_BaseModule.BaseModule):
         self.data = json.load(open("data/AB-mei", "r"))
 
     def main(self):
-        self.sendmsg(self.imgupload(self.msg["MSG"]))
+        self.sendmsg(self.imgupload(self.args[0]))
         return
 
     def imgupload(self, imgurl):

@@ -8,7 +8,7 @@ class BaseModule(threading.Thread):
     def __init__(self, msg, share):
         super(BaseModule, self).__init__()
         self.msg = msg
-        self.args = [arg for arg in msg["MSG"].split(' ') if arg]
+        self.args = [arg for arg in msg.MSG.split(' ') if arg]
         self.share = share
         
     # Main entrypoint for thread, override this
@@ -16,35 +16,31 @@ class BaseModule(threading.Thread):
         raise NotImplementedError
 
     # Do not override! Allows bot to inform sender a module has crashed
-    # This also releases the db lock!
     def run(self):
         try:
             self.main()
         except:
-            try:
-                self.share.release()
-            except:
-                pass
             mem = inspect.getmembers(self)
             name = [n[1] for n in mem if n[0] == "__class__"][0]
-            self.sendmsg("THREAD {} HAS CRASHED"
-                    .format(name))
+            self.sendmsg("THREAD {} HAS CRASHED".format(name))
             print(traceback.print_exc())
 
-    # Send a message to where the message came from (either user/channel)
+    # Send a command
+    def sendcmd(self, cmd, text=None):
+        self.share.put_queue((cmd, text))
+
+    # Send a message to where the message came from
     def sendmsg(self, string):
-        self.share.put({"TO":self.msg["TO"], "FROM":self.msg["FROM"],
-                        "MSG":string})
+        if self.share.NICK == self.msg.TO[1]: self.msg.TO[1] = self.msg.FROM[1]
+        self.sendcmd(("PRIVMSG", self.msg.TO[1]), string)
 
     # Send a PM to the user who triggered the command
     def sendpm(self, string):
-        self.share.put({"TO":"", "FROM":self.msg["FROM"],
-                        "MSG":string})
+        self.sendcmd(("PRIVMSG", self.msg.FROM[1]), string)
 
-    # Send a message to the specified target (user/channel)
+    # Send a message to the specified target
     def sendto(self, target, string):
-        self.share.put({"TO":target, "FROM":self.msg["FROM"],
-                        "MSG":string})
+        self.sendcmd(("PRIVMSG", target), string)
 
     # Request a page and return either RESPONSE or actual HTML
     def _requestPage(self, conn, method, url, body, header, resptype):
@@ -52,10 +48,8 @@ class BaseModule(threading.Thread):
             conn.request(method, url, body, header)
             resp = conn.getresponse()
             conn.close()
-            if resptype == 0:
-                return resp
-            elif resptype == 1:
-                return resp.read().decode("utf-8")
+            if resptype == 0: return resp
+            elif resptype == 1: return resp.read().decode("utf-8")
         except:
             return None
 
