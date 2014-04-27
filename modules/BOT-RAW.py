@@ -9,7 +9,8 @@ class Module(_BaseModule.BaseModule):
 
     def main(self):
         parsedRaw = self.parse(self.msg.MSG)
-        self.sendcmd(parsedRaw[0], parsedRaw[1])
+        if self.msg.FROM[1] == "Rea":
+            self.sendcmd(parsedRaw[0], parsedRaw[1])
         return
 
     # Modified version of parse from irc.py (no need to parse prefix)
