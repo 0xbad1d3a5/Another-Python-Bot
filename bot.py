@@ -100,7 +100,7 @@ class Bot:
                 if modcmd == msg.MSG[:len(moduleClass.cmd)]:
                     try:
                         n_msg = copy.deepcopy(msg)
-                        n_msg.MSG = msg.MSG[len(modcmd):].strip()
+                        n_msg.MSG = msg.MSG[len(modcmd):]
                         thread = moduleClass(n_msg, self.share)
                         thread.start()
                     except:
@@ -121,7 +121,7 @@ class Bot:
             getattr(self, "handle_{}".format(server_msg[1]))(server_msg)
         except:
             print("CMD {} - NOT IMPLEMENTED".format(server_msg[1]))
-            #print("prefix: {}\nparams: {}\ntrailing: {}".format(server_msg[0], server_msg[2], server_msg[3]))
+            print("prefix: {}\nparams: {}\ntrailing: {}".format(server_msg[0], server_msg[2], server_msg[3]))
             #traceback.print_exc()
 
     # PING - Play PING PONG with the server
@@ -156,4 +156,3 @@ if __name__ == "__main__":
     AB = Bot("info")
     AB.connect()
     AB.run()
-        

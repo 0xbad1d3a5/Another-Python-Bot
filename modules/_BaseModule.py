@@ -8,7 +8,7 @@ class BaseModule(threading.Thread):
     def __init__(self, msg, share):
         super(BaseModule, self).__init__()
         self.msg = msg
-        self.args = [arg for arg in msg.MSG.split(' ') if arg]
+        self.args = [arg.strip() for arg in msg.MSG.split(' ') if arg]
         self.share = share
         
     # Main entrypoint for thread, override this

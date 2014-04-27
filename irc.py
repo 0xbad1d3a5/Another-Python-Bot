@@ -16,17 +16,15 @@ class IRC:
 
     def read(self):
         (read, write, excep) = select.select([self.s], [], [], 0)
-        if read:
-            return read[0].recv(512).decode("utf-8", errors="ignore")
-        else:
-            return ""
+        if read: return read[0].recv(512).decode("utf-8", errors="ignore")
+        else: return ""
 
     def write(self, string):
         (read, write, excep) = select.select([], [self.s], [], 10)
         try:
             write[0].sendall(string.encode("utf-8", errors="ignore"))
-        except:
-            print("Socket write error")
+        except: 
+            print("Socket write error") 
             sys.exit(1)
 
     """

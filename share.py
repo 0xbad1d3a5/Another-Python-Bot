@@ -22,11 +22,14 @@ class Share:
         self.EXTRAS = info["EXTRAS"]
         self.REALNAME = info["REALNAME"]
         self.CHANNELS = info["CHANNELS"]
-
+        self.DATABASE_URI = "database.db"
+        
         self.queue = queue.Queue()
 
         self.modulelist = [importlib.import_module("." + mod, package="modules") for mod in modules.__all__]
+
         self.modulelist_lock = threading.Lock()
+        self.database_lock = threading.Lock()
 
     def get_queue(self): return self.queue.get()
     def put_queue(self, msg): self.queue.put(msg)
