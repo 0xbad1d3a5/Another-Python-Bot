@@ -4,7 +4,7 @@ from modules import _BaseModule
 
 class Module(_BaseModule.BaseModule):
 
-    cmd = ".8ball"
+    cmd = ".8ball "
 
     def __init__(self, msg, share):
         super(Module, self).__init__(msg, share)
