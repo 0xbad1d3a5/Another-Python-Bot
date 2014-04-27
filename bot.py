@@ -139,7 +139,7 @@ class Bot:
     
     # INVITE - Accept all channel invites automatically
     def handle_INVITE(self, server_msg):
-        self.sendcmd(("JOIN",), server_msg[1])
+        self.sendcmd(("JOIN",), server_msg[2])
 
     # PRIVMSG - Any sort of message
     def handle_PRIVMSG(self, server_msg):
