@@ -9,6 +9,7 @@ class Module(_BaseModule.BaseModule):
 
     def main(self):
         self.sendpm(".mei [url] - upload a image to AB")
-        self.sendpm(".8ball [question]")
+        self.sendpm(".8ball [question] - ask the mystical 8ball")
         self.sendpm(".poll <url/opt> <opt> - display poll results on AB")
+        self.sendpm(".random <anime/manga/visual_novels> - randomize stuff")
         return
