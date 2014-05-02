@@ -1,4 +1,8 @@
+import os
 import http
+import json
+import string
+import random
 import inspect
 import threading
 import traceback
@@ -11,11 +15,11 @@ class BaseModule(threading.Thread):
         self.args = [arg.strip() for arg in msg.MSG.split(' ') if arg]
         self.share = share
         
-    # Main entrypoint for thread, override this
+    """ Main entrypoint for thread, override this """
     def main(self):
         raise NotImplementedError
 
-    # Do not override! Allows bot to inform sender a module has crashed
+    """ Do not override! Allows bot to inform sender a module has crashed """
     def run(self):
         try:
             self.main()
@@ -25,20 +29,41 @@ class BaseModule(threading.Thread):
             self.sendmsg("THREAD {} HAS CRASHED".format(name))
             print(traceback.print_exc())
 
-    # Send a command
+    """ JSON reading """
+    def jsonread(self, filename):
+        f = open("data/" + filename, 'r')
+        data = json.load(f)
+        f.close()
+        return data
+
+    """ JSON writing """
+    def jsonwrite(self, filename, data):
+        tempname = "data/" + ''.join(random.choice(string.ascii_uppercase) for char in range(10))
+        filename = "data/" + filename
+        f = open(tempname, 'w')
+        json.dump(data, f, indent=4)
+        f.flush()
+        os.fsync(f.fileno())
+        f.close()
+        try: os.rename(tempname, filename)
+        except:
+            os.remove(filename)
+            os.rename(tempname, filename)
+
+    """ Send a command """
     def sendcmd(self, cmd, text=None):
         self.share.put_queue((cmd, text))
 
-    # Send a message to where the message came from
+    """ Send a message to where the message came from """
     def sendmsg(self, string):
         if self.share.NICK == self.msg.TO[1]: self.msg.TO[1] = self.msg.FROM[1]
         self.sendcmd(("PRIVMSG", self.msg.TO[1]), string)
 
-    # Send a PM to the user who triggered the command
+    """ Send a PM to the user who triggered the command """
     def sendpm(self, string):
         self.sendcmd(("PRIVMSG", self.msg.FROM[1]), string)
 
-    # Send a message to the specified target
+    """ Send a message to the specified target """
     def sendto(self, target, string):
         self.sendcmd(("PRIVMSG", target), string)
 

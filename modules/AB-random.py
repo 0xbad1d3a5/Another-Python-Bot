@@ -22,6 +22,7 @@ class Module(_BaseModule.BaseModule):
         webheader = data["webheader"]
         logininfo = urllib.parse.urlencode(data["logininfo"])
         seriesurl = data["seriesurl"]
+        silentchannels = data["silentchannels"]
 
         # Login to AB
         resp = self.reqPage(AB, "POST", "/login.php", logininfo, webheader)
@@ -49,6 +50,10 @@ class Module(_BaseModule.BaseModule):
         list_series = re.findall("(?<=series.php\?id=)\d*", series_page)
         rand_series = random.choice(list_series)
 
-        self.sendmsg(seriesurl + "?id=" + rand_series)
+        print(self.msg.TO)
+        if self.msg.TO[1].lower() in silentchannels:
+            self.sendcmd(("NOTICE", self.msg.FROM[1]), seriesurl + "?id=" + rand_series)
+        else:
+            self.sendmsg(seriesurl + "?id=" + rand_series)
 
         return
