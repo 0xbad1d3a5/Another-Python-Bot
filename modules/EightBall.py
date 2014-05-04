@@ -11,44 +11,48 @@ class Module(_BaseModule.BaseModule):
 
     def main(self):
         num = random.randint(1, 20)
+        msg = ""
         if num == 1:
-            self.sendmsg("It is certain")
+            msg = "It is certain"
         elif num == 2:
-            self.sendmsg("It is decidedly so")
+            msg = "It is decidedly so"
         elif num == 3:
-            self.sendmsg("Without a doubt")
+            msg = "Without a doubt"
         elif num == 4:
-            self.sendmsg("Yes definitely")
+            msg = "Yes definitely"
         elif num == 5:
-            self.sendmsg("You may rely on it")
+            msg = "You may rely on it"
         elif num == 6:
-            self.sendmsg("As I see it, yes")
+            msg = "As I see it, yes"
         elif num == 7:
-            self.sendmsg("Most likely")
+            msg = "Most likely"
         elif num == 8:
-            self.sendmsg("Outlook good")
+            msg = "Outlook good"
         elif num == 9:
-            self.sendmsg("Yes")
+            msg = "Yes"
         elif num == 10:
-            self.sendmsg("Signs point to yes")
+            msg = "Signs point to yes"
         elif num == 11:
-            self.sendmsg("Reply hazy try again")
+            msg = "Reply hazy try again"
         elif num == 12:
-            self.sendmsg("Ask again later")
+            msg = "Ask again later"
         elif num == 13:
-            self.sendmsg("Better not tell you now")
+            msg = "Better not tell you now"
         elif num == 14:
-            self.sendmsg("Cannot predict now")
+            msg = "Cannot predict now"
         elif num == 15:
-            self.sendmsg("Concentrate and ask again")
+            msg = "Concentrate and ask again"
         elif num == 16:
-            self.sendmsg("Don't count on it")
+            msg = "Don't count on it"
         elif num == 17:
-            self.sendmsg("My reply is no")
+            msg = "My reply is no"
         elif num == 18:
-            self.sendmsg("My sources say no")
+            msg = "My sources say no"
         elif num == 19:
-            self.sendmsg("Outlook not so good")
+            msg = "Outlook not so good"
         elif num == 20:
-            self.sendmsg("Very doubtful")
+            msg = "Very doubtful"
+            
+        self.sendmsg(self.msg.FROM[1] + ": " + msg)
+        
         return
