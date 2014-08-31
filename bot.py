@@ -121,7 +121,7 @@ class Bot:
             getattr(self, "handle_{}".format(server_msg[1]))(server_msg)
         except:
             print("CMD {} - NOT IMPLEMENTED".format(server_msg[1]))
-            print("prefix: {}\nparams: {}\ntrailing: {}".format(server_msg[0], server_msg[2], server_msg[3]))
+            # print("prefix: {}\nparams: {}\ntrailing: {}".format(server_msg[0], server_msg[2], server_msg[3]))
             #traceback.print_exc()
 
     # PING - Play PING PONG with the server
@@ -150,7 +150,7 @@ class Bot:
             self.runmodules(msg)
         except:
             traceback.print_exc()
-        print("{} {}: {}".format(msg.TO[0], msg.FROM[0], msg.MSG).encode("utf-8"))
+        # print("{} {}: {}".format(msg.TO[0], msg.FROM[0], msg.MSG).encode("utf-8"))
 
 if __name__ == "__main__":
 

@@ -31,24 +31,43 @@ class BaseModule(threading.Thread):
 
     """ JSON reading """
     def jsonread(self, filename):
-        f = open("data/" + filename, 'r')
-        data = json.load(f)
-        f.close()
-        return data
+        try:
+            f = open("data/" + filename, 'r')
+            data = json.load(f)
+            f.close()
+            return data
+        except:
+            self.sendmsg("Error opening datafile")
+            return None
 
     """ JSON writing """
     def jsonwrite(self, filename, data):
         tempname = "data/" + ''.join(random.choice(string.ascii_uppercase) for char in range(10))
         filename = "data/" + filename
-        f = open(tempname, 'w')
-        json.dump(data, f, indent=4)
-        f.flush()
-        os.fsync(f.fileno())
-        f.close()
-        try: os.rename(tempname, filename)
+
+        # Write to temp file
+        try:
+            f = open(tempname, 'w')
+            json.dump(data, f, indent=4)
+            f.flush()
+            os.fsync(f.fileno())
+            f.close()
         except:
-            os.remove(filename)
+            self.sendmsg("Write to tempfile failed")
+            return
+
+        # Try to rename file
+        try:
             os.rename(tempname, filename)
+        except:
+            # Handle Windows case; even if we fail here, at least we'd have a backup
+            try:
+                os.remove(filename)
+                os.rename(tempname, filename)
+            # Finally fail
+            except:
+                self.sendmsg("Rename failed")
+                return
 
     """ Send a command """
     def sendcmd(self, cmd, text=None):
