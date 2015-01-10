@@ -96,6 +96,10 @@ class Module(_BaseModule.BaseModule):
         votes = [[html.parser.HTMLParser().unescape(v[0]), v[1],
                   '|' * int(math.ceil(float(v[1])))]
                  for v in votes]
+        for v in votes:
+            if len(v[0]) > 16:
+                v[0] = v[0][:16]
+                v[0] += "..."
 
         maxlen_title = max([len(t[0]) for t in votes])
         maxlen_total = max([len(t[0]) + len(t[2]) for t in votes])
@@ -104,9 +108,14 @@ class Module(_BaseModule.BaseModule):
         self.sendmsg("==== ==== ==== ====")
 
         for vote in votes:
+            pad = ' ' * (maxlen_title - len(vote[0]))
+            self.sendmsg("{}{} {}".format(pad, vote[0], vote[2]))
+            """
             if maxlen_total <= 55:
                 pad = ' ' * (maxlen_title - len(vote[0]))
                 self.sendmsg("{}{} {}".format(pad, vote[0], vote[2]))
             else:
                 self.sendmsg("{} ".format(vote[0]))
                 self.sendmsg("{} ".format(vote[2]))
+                """
+

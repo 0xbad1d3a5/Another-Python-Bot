@@ -1,10 +1,10 @@
 {
-	"HOST" : "irc.example.com",
-	"PORT" : "6667",
+	"HOST"     : "irc.example.com",
+	"PORT"     : "6667",
 	"CHANNELS" : "#channel1,#channel2",
-	"NICK" : "Nickname",
-	"IDENT" : "Nick",
+	"NICK"     : "Nickname",
+	"IDENT"    : "Nick",
 	"REALNAME" : "Your Name",
-	"EXTRAS" : ["PRIVMSG nickserv :IDENTIFY <password>",
+	"EXTRAS"   : ["PRIVMSG nickserv :IDENTIFY <password>",
                     "<RAW IRC COMMAND>"]
 }
