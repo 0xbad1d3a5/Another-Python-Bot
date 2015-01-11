@@ -80,4 +80,4 @@ class Module(_BaseModule.BaseModule):
                 return (image_file, image_type, "Error optimizing image")
         # Can't optimize the image
         else:
-            return (image_file, image_type, "Unable to optimize")
+            return (image_file, image_type, "Unable to optimize", tempname)
