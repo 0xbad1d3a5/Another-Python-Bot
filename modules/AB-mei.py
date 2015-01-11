@@ -53,6 +53,8 @@ class Module(_BaseModule.BaseModule):
                     self.sendmsg("ImageUpload Error: No image found")
             else:
                 self.sendmsg("ImageUpload Error: No response")
+        
+        os.remove(image_list[3])
 
         return
     
@@ -73,7 +75,7 @@ class Module(_BaseModule.BaseModule):
                 if image_type == "jpeg": subprocess.check_call(["jpegoptim", "-s", tempname])
                 if image_type == "png": subprocess.check_call(["optipng", tempname])
                 image_file = open(tempname, "rb")
-                return (image_file,image_type,"{:.2f}% Reduction".format((1-os.path.getsize(tempname)/size)*100))
+                return (image_file,image_type,"{:.2f}% Reduction".format((1-os.path.getsize(tempname)/size)*100), tempname)
             except:
                 return (image_file, image_type, "Error optimizing image")
         # Can't optimize the image
