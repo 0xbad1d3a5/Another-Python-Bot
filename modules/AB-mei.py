@@ -26,7 +26,7 @@ class Module(_BaseModule.BaseModule):
         meiurl = data["meiurl"]
 
         # Download the image, and return if not possible
-        try: image_file = urlopen(self.args[0])
+        try: image_file = requests.get(self.args[0])
         except:
             self.sendmsg("Image not found")
             return
@@ -61,7 +61,7 @@ class Module(_BaseModule.BaseModule):
     
     def optimizeImage(self, image_file):
         # Read the image
-        image = image_file.read()
+        image = image_file.content
         image_type = imghdr.what(None, image)
         # We can optimize the image
         if image_type in ["jpeg", "png"]:
