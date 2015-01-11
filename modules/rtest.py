@@ -7,7 +7,7 @@ import string
 import random
 import urllib
 import subprocess
-
+import requests
 
 from urllib.request import urlopen
 
@@ -15,14 +15,15 @@ from modules import _BaseModule
 
 class Module(_BaseModule.BaseModule):
 
-    cmd = ".t"
+    cmd = ".mei "
 
     def __init__(self, msg, share):
         super(Module, self).__init__(msg, share)
 
     def main(self):
 
-        data = self.jsonread("mei")
+        data = self.jsonread("AB-mei")
+        meiurl = data["meiurl"]
 
         # Download the image, and return if not possible
         try: image_file = urlopen(self.args[0])
@@ -31,29 +32,27 @@ class Module(_BaseModule.BaseModule):
             return
         
         image_list = self.optimizeImage(image_file)
-        image = image_list[0].read()
+        image = image_list[0]
         image_type = image_list[1]
         image_resp = image_list[2]
-
+        
         if image_type:
-
-            MEI = http.client.HTTPSConnection(data["MEI"])
-            meiheader = data["meiheader"]
-
-            b = "--stopboundaryhere\r\n"
-            b += "Content-Disposition: form-data; name=\"ufile0\"; filename=\"asda." + image_type + "\"" + "\r\n"
-            b += "Content-Type: image/" + image_type + "\r\n"
-            b += "Content-Transfer-Encoding: base64\r\n\r\n"
-            b += str(image)
-            b += "\r\n--stopboundaryhere\r\n"
-            b += "Content-Disposition: form-data; name=\"Submit\"\r\n\r\n"
-            b += "Upload\r\n"
-            b += "--stopboundaryhere"
-
-            print(b)
-
-            resp = self.reqPage(MEI, "POST", "/upload_ac.php", b, meiheader)
-            print(resp.getheaders())
+            data = { 'numFiles' : '1' }
+            files = { ('ufile0', ('a.'+image_type, image, 'image/'+image_type)) }
+            resp = requests.post("https://mei.animebytes.tv/upload_ac.php",
+                              files=files,
+                              data={ 'numFiles' : '1', 'Submit' : 'Upload' },
+                              allow_redirects=False)
+            if resp != None:
+                url = resp.headers["Location"]
+                url = re.search("imageupload.php\?img=(.*)", url).group(1)
+                url = meiurl + url
+                if url != meiurl:
+                    self.sendmsg(url + ' (' + image_resp + ')')
+                else:
+                    self.sendmsg("ImageUpload Error: No image found")
+            else:
+                self.sendmsg("ImageUpload Error: No response")
 
         return
     
@@ -71,8 +70,8 @@ class Module(_BaseModule.BaseModule):
             size = os.path.getsize(tempname)
             # Optimize the images and check call
             try:
-                if image_type == "jpeg": subprocess.check_call(["data/jpegoptim", "-s", tempname])
-                if image_type == "png": subprocess.check_call(["data/optipng", tempname])
+                if image_type == "jpeg": subprocess.check_call(["jpegoptim", "-s", tempname])
+                if image_type == "png": subprocess.check_call(["optipng", tempname])
                 image_file = open(tempname, "rb")
                 return (image_file,image_type,"{:.2f}% Reduction".format((1-os.path.getsize(tempname)/size)*100))
             except:

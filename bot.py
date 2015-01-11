@@ -122,7 +122,7 @@ class Bot:
         except:
             print("CMD {} - NOT IMPLEMENTED".format(server_msg[1]))
             # print("prefix: {}\nparams: {}\ntrailing: {}".format(server_msg[0], server_msg[2], server_msg[3]))
-            #traceback.print_exc()
+            # traceback.print_exc()
 
     # PING - Play PING PONG with the server
     def handle_PING(self, server_msg):
