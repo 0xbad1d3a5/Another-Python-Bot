@@ -54,8 +54,9 @@ class Module(_BaseModule.BaseModule):
             else:
                 self.sendmsg("ImageUpload Error: No response")
         
-        os.remove(image_list[3])
-
+        if image_list[3] is not None:
+            os.remove(image_list[3])
+        
         return
     
     def optimizeImage(self, image_file):
@@ -80,4 +81,4 @@ class Module(_BaseModule.BaseModule):
                 return (image_file, image_type, "Error optimizing image")
         # Can't optimize the image
         else:
-            return (image_file, image_type, "Unable to optimize", tempname)
+            return (image_file, image_type, "Unable to optimize", None)
