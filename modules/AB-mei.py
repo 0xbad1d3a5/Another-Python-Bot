@@ -40,9 +40,9 @@ class Module(_BaseModule.BaseModule):
             data = { 'numFiles' : '1' }
             files = { ('ufile0', ('a.'+image_type, image, 'image/'+image_type)) }
             resp = requests.post("https://mei.animebytes.tv/upload_ac.php",
-                              files=files,
-                              data={ 'numFiles' : '1', 'Submit' : 'Upload' },
-                              allow_redirects=False)
+                                 files=files,
+                                 data={ 'numFiles' : '1', 'Submit' : 'Upload' },
+                                 allow_redirects=False)
             if resp != None:
                 url = resp.headers["Location"]
                 url = re.search("imageupload.php\?img=(.*)", url).group(1)
@@ -76,9 +76,9 @@ class Module(_BaseModule.BaseModule):
                 if image_type == "jpeg": subprocess.check_call(["jpegoptim", "-s", tempname])
                 if image_type == "png": subprocess.check_call(["optipng", tempname])
                 image_file = open(tempname, "rb")
-                return (image_file,image_type,"{:.2f}% Reduction".format((1-os.path.getsize(tempname)/size)*100), tempname)
+                return (image_file, image_type, "{:.2f}% Reduction".format((1-os.path.getsize(tempname)/size)*100), tempname)
             except:
-                return (image_file, image_type, "Error optimizing image")
+                return (image_file, image_type, "Error optimizing image", None)
         # Can't optimize the image
         else:
-            return (image_file, image_type, "Unable to optimize", None)
+            return (image, image_type, "Unable to optimize", None)
