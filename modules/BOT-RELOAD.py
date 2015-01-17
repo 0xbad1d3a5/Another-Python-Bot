@@ -16,7 +16,8 @@ class Module(_BaseModule.BaseModule):
         super(Module, self).__init__(msg, share)
 
     def main(self):
-        self.reloadmodules()
+        if self.msg.FROM[3] == "Xyresic.SeniorModerator.AnimeBytes":
+            self.reloadmodules()
         return
 
     # Reloads all modules, loads any new modules as well
