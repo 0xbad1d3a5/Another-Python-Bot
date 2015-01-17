@@ -9,7 +9,7 @@ class Module(_BaseModule.BaseModule):
 
     def main(self):
         parsedRaw = self.parse(self.msg.MSG)
-        if self.msg.FROM[1] == "Rea":
+        if self.msg.FROM[3] == "Xyresic.SeniorModerator.AnimeBytes":
             self.sendcmd(parsedRaw[0], parsedRaw[1])
         return
 

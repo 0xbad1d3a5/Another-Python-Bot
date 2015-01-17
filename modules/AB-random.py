@@ -50,9 +50,13 @@ class Module(_BaseModule.BaseModule):
         list_series = re.findall("(?<=series.php\?id=)\d*", series_page)
         rand_series = random.choice(list_series)
 
+        self.sendmsg(seriesurl + "?id=" + rand_series)
+        
+        """
         if self.msg.TO[1].lower() in silentchannels:
             self.sendcmd(("NOTICE", self.msg.FROM[1]), seriesurl + "?id=" + rand_series)
         else:
             self.sendmsg(seriesurl + "?id=" + rand_series)
+            """
 
         return
