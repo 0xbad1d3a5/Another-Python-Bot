@@ -8,9 +8,9 @@ class Module(_BaseModule.BaseModule):
         super(Module, self).__init__(msg, share)
 
     def main(self):
-        self.sendpm(".mei [url] - upload a image to AB")
-        self.sendpm(".8ball [question] - ask the mystical 8ball")
-        self.sendpm(".poll <url/opt> <opt> - display poll results on AB")
-        self.sendpm(".pick [args ...] - pick from list of choices separated by spaces")
-        self.sendpm(".random <anime/manga/visual_novels> - randomize stuff")
+        self.sendpm(".mei [url] [, -lossy] - upload an image to AB's Image Uploader. The -lossy option will produce a jpg at quality 60.")
+        self.sendpm(".random [anime | manga | visual_novels] - return a random anime, manga, or visual novel from the site.")
+        self.sendpm(".poll [name | url] - get results of a poll on AB - even if you didn't vote! (set name with .poll [url] [name]).")
+        self.sendpm(".pick [arg] [, ...] - pick from a list of choices separated by spaces.")
+        self.sendpm(".8ball [question] - ask the mystical 8ball, ridiculously accurate.")
         return

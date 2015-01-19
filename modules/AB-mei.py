@@ -73,8 +73,16 @@ class Module(_BaseModule.BaseModule):
             size = os.path.getsize(tempname)
             # Optimize the images and check call
             try:
-                if image_type == "jpeg": subprocess.check_call(["jpegoptim", "-s", tempname])
-                if image_type == "png": subprocess.check_call(["optipng", tempname])
+                if "-lossy" in self.args:
+                    filename = os.path.splitext(tempname)[0]
+                    subprocess.check_call(["convert", "-quality", "60", tempname, filename + ".jpeg"])
+                    tempname = filename + ".jpeg"
+                    image_type = ".jpeg"
+                else:
+                    if image_type == "jpeg":
+                        subprocess.check_call(["jpegoptim", "-s", tempname])
+                    if image_type == "png":
+                        subprocess.check_call(["optipng", tempname])
                 image_file = open(tempname, "rb")
                 return (image_file, image_type, "{:.2f}% Reduction".format((1-os.path.getsize(tempname)/size)*100), tempname)
             except:
