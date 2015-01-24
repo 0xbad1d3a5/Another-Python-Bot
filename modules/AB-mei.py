@@ -82,7 +82,7 @@ class Module(_BaseModule.BaseModule):
                     if image_type == "jpeg":
                         subprocess.check_call(["jpegoptim", "-s", tempname])
                     if image_type == "png":
-                        subprocess.check_call(["optipng", tempname])
+                        subprocess.check_call(["optipng", "-fix", tempname])
                 image_file = open(tempname, "rb")
                 return (image_file, image_type, "{:.2f}% Reduction".format((1-os.path.getsize(tempname)/size)*100), tempname)
             except:
