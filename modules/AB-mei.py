@@ -46,7 +46,37 @@ class Module(_BaseModule.BaseModule):
                     self.sendmsg("Error occured trying to get image(s)")
                     return
 
-        self.processImage(arg_list)
+        file_names, size_before = self.processImage(arg_list)
+
+        if len(file_names) > 10:
+            self.sendmsg("ImageMagick resulted in more than 10 images, aborting")
+            for f in file_names: os.remove(f)
+            return
+
+        optimized_images = []
+        for f in file_names:
+            optimized_images.append(self.optimizeImage(f))
+
+        response = []
+        size_after = 0
+        for o in optimized_images:
+            size_after += o[2]
+            response.append(self.upload(o))
+
+        if len(response) == 1:
+            if size_after <= size_before:
+                self.sendmsg("{} ({:.2f}% Reduction)".format(response[0], (1-size_after/size_before)*100))
+            else:
+                self.sendmsg("{} ({:.2f}% Increase)".format(response[0], (1-size_before/size_after)*100))
+        else:
+            for r in response:
+                self.sendmsg(r)
+            if size_after <= size_before:
+                self.sendmsg("({:.2f}% Reduction)".format((1-size_after/size_before)*100))
+            else:
+                self.sendmsg("({:.2f}% Increase)".format((1-size_before/size_after)*100))
+
+        for f in file_names: os.remove(f)
 
         return
 
@@ -65,8 +95,13 @@ class Module(_BaseModule.BaseModule):
                 size += os.path.getsize(tempname)
                 arg_list[i] = (tempname, "IMG")
 
-        result_name = self.randomName()
+        if arg_list[-1][0] in ["png", "jpeg", "jpg", "gif"]:
+            result_name = self.randomName() + '.' + arg_list[-1][0]
+            arg_list.remove(arg_list[-1])
+        else:
+            result_name = self.randomName()
         arg_list.append((result_name, "ARG"))
+
         try:
             subprocess.check_call(["convert"] + [a[0] for a in arg_list])
         except:
@@ -74,15 +109,36 @@ class Module(_BaseModule.BaseModule):
                 if arg[1] == "IMG":
                     os.remove(arg[0])
             self.sendmsg("ImageMagick Error")
-            return
+            return [], 0
+
+        for arg in arg_list:
+            if arg[1] == "IMG":
+                os.remove(arg[0])
+
+        file_names = os.listdir("data/images/")
+        file_names = ["data/images/" + f for f in file_names if re.search("{0}.*".format(os.path.basename(result_name)), f)]
+
+        return file_names, size
+
+    def optimizeImage(self, file_name):
+
+        image_type = imghdr.what(file_name)
+
+        if image_type in ["jpeg", "png"]:
+            if image_type == "jpeg":
+                subprocess.check_call(["jpegoptim", "-s", file_name])
+            if image_type == "png":
+                subprocess.check_call(["optipng", "-fix", file_name])
+
+        return (file_name, image_type, os.path.getsize(file_name))
 
     def upload(self, image_info):
+
         data = self.jsonread("AB-mei")
         meiurl = data["meiurl"]
         
-        image = image_info[0]
+        image = open(image_info[0], "rb")
         image_type = image_info[1]
-        image_resp = image_info[2]
 
         response = ""
         if image_type:
@@ -97,42 +153,10 @@ class Module(_BaseModule.BaseModule):
                 url = re.search("imageupload.php\?img=(.*)", url).group(1)
                 url = meiurl + url
                 if url != meiurl:
-                    response = url + ' (' + image_resp + ')'
+                    response = url
                 else:
                     response = "ImageUpload Error: No image found"
             else:
                 response = "ImageUpload Error: No response"
         
         return response
-    
-    def optimizeImage(self, image_file):
-        # Read the image
-        image = image_file.content
-        image_type = imghdr.what(None, image)
-        # We can optimize the image
-        if image_type in ["jpeg", "png"]:
-            # Write the image to file
-            tempname = "data/_img_" + ''.join(random.choice(string.ascii_uppercase) for char in range(10))
-            f = open(tempname, "wb")
-            f.write(image)
-            f.close()
-            size = os.path.getsize(tempname)
-            # Optimize the images and check call
-            try:
-                if "-lossy" in self.args:
-                    filename = os.path.splitext(tempname)[0]
-                    subprocess.check_call(["convert", "-quality", "60", tempname, filename + ".jpeg"])
-                    tempname = filename + ".jpeg"
-                    image_type = ".jpeg"
-                else:
-                    if image_type == "jpeg":
-                        subprocess.check_call(["jpegoptim", "-s", tempname])
-                    if image_type == "png":
-                        subprocess.check_call(["optipng", "-fix", tempname])
-                image_file = open(tempname, "rb")
-                return (image_file, image_type, "{:.2f}% Reduction".format((1-os.path.getsize(tempname)/size)*100), tempname)
-            except:
-                return (image_file, image_type, "Error optimizing image", None)
-        # Can't optimize the image
-        else:
-            return (image, image_type, "Unable to optimize", None)
