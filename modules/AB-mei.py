@@ -52,6 +52,8 @@ class Module(_BaseModule.BaseModule):
             self.sendmsg("ImageMagick resulted in more than 10 images, aborting")
             for f in file_names: os.remove(f)
             return
+        elif not file_names:
+            self.sendmsg("Error occured trying to get image(s)")
 
         optimized_images = []
         for f in file_names:
@@ -95,12 +97,13 @@ class Module(_BaseModule.BaseModule):
                 size += os.path.getsize(tempname)
                 arg_list[i] = (tempname, "IMG")
 
-        if arg_list[-1][0] in ["png", "jpeg", "jpg", "gif"]:
-            result_name = self.randomName() + '.' + arg_list[-1][0]
-            arg_list.remove(arg_list[-1])
-        else:
-            result_name = self.randomName()
-        arg_list.append((result_name, "ARG"))
+        result_name = self.randomName()
+        if arg_list:
+            if arg_list[-1][0] in ["png", "jpeg", "jpg", "gif"]:
+                result_name = self.randomName() + '.' + arg_list[-1][0]
+                arg_list.remove(arg_list[-1])
+                
+            arg_list.append((result_name, "ARG"))
 
         try:
             subprocess.check_call(["convert"] + [a[0] for a in arg_list])
