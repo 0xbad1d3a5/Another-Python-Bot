@@ -68,7 +68,7 @@ class Module(_BaseModule.BaseModule):
                 self.sendmsg("{} ({:.2f}% Reduction)".format(response[0], (1-size_after/size_before)*100))
             else:
                 self.sendmsg("{} ({:.2f}% Increase)".format(response[0], (1-size_before/size_after)*100))
-        else:
+        elif len(response) > 1:
             for r in response:
                 self.sendmsg(r)
             if size_after <= size_before:
