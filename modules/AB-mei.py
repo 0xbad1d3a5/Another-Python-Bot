@@ -22,20 +22,69 @@ class Module(_BaseModule.BaseModule):
 
     def main(self):
 
+        arg_list = list(self.args)
+
+        # filter out some dangerous input
+        arg_list = [a for a in arg_list if "../" not in a]
+        arg_list = [a for a in arg_list if a != '*']
+        arg_list = [a for a in arg_list if '/' not in a or re.search("http://|https://", a)]
+
+        for i, arg in enumerate(arg_list):
+            if re.search("http://|https://", arg):
+                arg_list[i] = (arg, "IMG")
+            else:
+                arg_list[i] = (arg, "ARG")
+
+        for i, arg in enumerate(arg_list):
+            if arg[1] == "IMG":
+                try:
+                    image_http_resp = requests.get(arg[0])
+                    if not imghdr.what(None, image_http_resp.content):
+                        raise Exception
+                    arg_list[i] = (image_http_resp.content, "IMG")
+                except:
+                    self.sendmsg("Error occured trying to get image(s)")
+                    return
+
+        self.processImage(arg_list)
+
+        return
+
+    def randomName(self):
+        return "data/images/_img_" + ''.join(random.choice(string.ascii_uppercase) for char in range(10))
+
+    def processImage(self, arg_list):
+
+        size = 0
+        for i, arg in enumerate(arg_list):
+            if arg[1] == "IMG":
+                tempname = self.randomName()
+                f = open(tempname, "wb")
+                f.write(arg[0])
+                f.close()
+                size += os.path.getsize(tempname)
+                arg_list[i] = (tempname, "IMG")
+
+        result_name = self.randomName()
+        arg_list.append((result_name, "ARG"))
+        try:
+            subprocess.check_call(["convert"] + [a[0] for a in arg_list])
+        except:
+            for arg in arg_list:
+                if arg[1] == "IMG":
+                    os.remove(arg[0])
+            self.sendmsg("ImageMagick Error")
+            return
+
+    def upload(self, image_info):
         data = self.jsonread("AB-mei")
         meiurl = data["meiurl"]
+        
+        image = image_info[0]
+        image_type = image_info[1]
+        image_resp = image_info[2]
 
-        # Download the image, and return if not possible
-        try: image_file = requests.get(self.args[0])
-        except:
-            self.sendmsg("Image not found")
-            return
-        
-        image_list = self.optimizeImage(image_file)
-        image = image_list[0]
-        image_type = image_list[1]
-        image_resp = image_list[2]
-        
+        response = ""
         if image_type:
             data = { 'numFiles' : '1' }
             files = { ('ufile0', ('a.'+image_type, image, 'image/'+image_type)) }
@@ -48,16 +97,13 @@ class Module(_BaseModule.BaseModule):
                 url = re.search("imageupload.php\?img=(.*)", url).group(1)
                 url = meiurl + url
                 if url != meiurl:
-                    self.sendmsg(url + ' (' + image_resp + ')')
+                    response = url + ' (' + image_resp + ')'
                 else:
-                    self.sendmsg("ImageUpload Error: No image found")
+                    response = "ImageUpload Error: No image found"
             else:
-                self.sendmsg("ImageUpload Error: No response")
+                response = "ImageUpload Error: No response"
         
-        if image_list[3] is not None:
-            os.remove(image_list[3])
-        
-        return
+        return response
     
     def optimizeImage(self, image_file):
         # Read the image
