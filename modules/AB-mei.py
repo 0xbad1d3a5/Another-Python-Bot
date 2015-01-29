@@ -119,7 +119,7 @@ class Module(_BaseModule.BaseModule):
                 os.remove(arg[0])
 
         file_names = os.listdir("data/images/")
-        file_names = ["data/images/" + f for f in file_names if re.search("{0}.*".format(os.path.basename(result_name)), f)]
+        file_names = ["data/images/" + f for f in file_names if re.search("{0}.*".format(os.path.splitext(os.path.basename(result_name))[0]), f)]
 
         return file_names, size
 
