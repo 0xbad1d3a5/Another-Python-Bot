@@ -9,6 +9,8 @@ import urllib
 import subprocess
 import requests
 
+import traceback
+
 from urllib.request import urlopen
 
 from modules import _BaseModule
@@ -27,22 +29,39 @@ class Module(_BaseModule.BaseModule):
         # filter out some dangerous input
         arg_list = [a for a in arg_list if "../" not in a]
         arg_list = [a for a in arg_list if a != '*']
-        arg_list = [a for a in arg_list if '/' not in a or re.search("http://|https://", a)]
+        arg_list = [a for a in arg_list if '/' not in a or re.match("http://|https://", a)]
+        arg_list = [a for a in arg_list if not re.match("fd:\d+", a)]
+        arg_list = [a for a in arg_list if not re.match("@.*", a)]
 
+        # determine if argument is a URL or not
         for i, arg in enumerate(arg_list):
-            if re.search("http://|https://", arg):
+            if re.match("http://|https://", arg):
                 arg_list[i] = (arg, "IMG")
             else:
                 arg_list[i] = (arg, "ARG")
 
+        # write to file and check if is image
+        remove_list = []
         for i, arg in enumerate(arg_list):
             if arg[1] == "IMG":
                 try:
-                    image_http_resp = requests.get(arg[0])
-                    if not imghdr.what(None, image_http_resp.content):
-                        raise Exception
-                    arg_list[i] = (image_http_resp.content, "IMG")
+                    frames = re.search(".*(\[.*\])", arg[0])
+                    if frames:
+                        frames = frames.group(1)
+                        image_http_resp = requests.get(arg[0][:-len(frames)])
+                    else:
+                        frames = ""
+                        image_http_resp = requests.get(arg[0])
+                    tempname = self.randomName()
+                    f = open(tempname, "wb")
+                    f.write(image_http_resp.content)
+                    f.close()
+                    arg_list[i] = ((tempname, frames), "IMG")
+                    remove_list.append(tempname)
+                    subprocess.check_call(["identify", tempname])
                 except:
+                    traceback.print_exc()
+                    for r in remove_list: os.remove(r)                   
                     self.sendmsg("Error occured trying to get image(s)")
                     return
 
@@ -53,6 +72,7 @@ class Module(_BaseModule.BaseModule):
             for f in file_names: os.remove(f)
             return
         elif not file_names:
+            traceback.print_exc()
             self.sendmsg("Error occured trying to get image(s)")
 
         optimized_images = []
@@ -90,33 +110,36 @@ class Module(_BaseModule.BaseModule):
         size = 0
         for i, arg in enumerate(arg_list):
             if arg[1] == "IMG":
-                tempname = self.randomName()
-                f = open(tempname, "wb")
-                f.write(arg[0])
-                f.close()
-                size += os.path.getsize(tempname)
-                arg_list[i] = (tempname, "IMG")
+                size += os.path.getsize(arg[0][0])
 
+        # Don't do any processing if we have no arguments and all images are jpeg
+        if "ARG" not in [a[1] for a in arg_list]:
+            if not [imghdr.what(a[0][0]) for a in arg_list if imghdr.what(a[0][0]) != "jpeg"]:
+                return [a[0][0] for a in arg_list], size
+            
         result_name = self.randomName()
         if arg_list:
-            if arg_list[-1][0] in ["png", "jpeg", "jpg", "gif"]:
+            if arg_list[-1][1] == "ARG" and arg_list[-1][0] in ["png", "jpeg", "jpg", "gif"]:
                 result_name = self.randomName() + '.' + arg_list[-1][0]
                 arg_list.remove(arg_list[-1])
-                
             arg_list.append((result_name, "ARG"))
 
         try:
-            subprocess.check_call(["convert"] + [a[0] for a in arg_list])
+            call_list = list(arg_list)
+            for i, c in enumerate(call_list):
+                if c[1] == "IMG":
+                    call_list[i] = (''.join(c[0]), "IMG")
+            subprocess.check_call(["convert"] + [c[0] for c in call_list])
         except:
             for arg in arg_list:
                 if arg[1] == "IMG":
-                    os.remove(arg[0])
+                    os.remove(arg[0][0])
             self.sendmsg("ImageMagick Error")
             return [], 0
 
         for arg in arg_list:
             if arg[1] == "IMG":
-                os.remove(arg[0])
+                os.remove(arg[0][0])
 
         file_names = os.listdir("data/images/")
         file_names = ["data/images/" + f for f in file_names if re.search("{0}.*".format(os.path.splitext(os.path.basename(result_name))[0]), f)]
@@ -129,7 +152,7 @@ class Module(_BaseModule.BaseModule):
 
         if image_type in ["jpeg", "png"]:
             if image_type == "jpeg":
-                subprocess.check_call(["jpegoptim", "-s", file_name])
+                subprocess.check_call(["jpegoptim", "--strip-all", file_name])
             if image_type == "png":
                 subprocess.check_call(["optipng", "-fix", file_name])
 
