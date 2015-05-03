@@ -119,7 +119,7 @@ class Module(_BaseModule.BaseModule):
             
         result_name = self.randomName()
         if arg_list:
-            if arg_list[-1][1] == "ARG" and arg_list[-1][0] in ["png", "jpeg", "jpg", "gif"]:
+            if arg_list[-1][1] == "ARG" and arg_list[-1][0] in ["png", "jpeg", "jpg", "gif", "ico"]:
                 result_name = self.randomName() + '.' + arg_list[-1][0]
                 arg_list.remove(arg_list[-1])
             arg_list.append((result_name, "ARG"))
